@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.wj.clubmdm.application.LoginController">
+   <children>
+      <Label layoutX="388.0" layoutY="120.0" text="Welcome to Login MDM">
+         <font>
+            <Font name="System Bold" size="36.0" />
+         </font>
+      </Label>
+      <ImageView fx:id="logo" fitHeight="150.0" fitWidth="200.0" layoutX="501.0" layoutY="186.0" pickOnBounds="true" preserveRatio="true" />
+      <TextField fx:id="tfAccount" layoutX="480.0" layoutY="361.0" prefHeight="36.0" prefWidth="243.0" promptText="使用者帳號">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </TextField>
+      <PasswordField fx:id="pfPassword" layoutX="480.0" layoutY="407.0" prefHeight="36.0" prefWidth="243.0" promptText="請輸入密碼">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </PasswordField>
+      <Button fx:id="btnLogin" layoutX="480.0" layoutY="453.0" mnemonicParsing="false" onAction="#chkAccount" prefHeight="36.0" prefWidth="116.0" text="登入">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Button>
+      <Button fx:id="btnForgetPWD" layoutX="606.0" layoutY="453.0" mnemonicParsing="false" onAction="#forgetPWD" prefHeight="36.0" prefWidth="116.0" text="忘記密碼">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Button>
+      <Label fx:id="labelMsg" alignment="CENTER" layoutX="430.0" layoutY="498.0" prefHeight="24.0" prefWidth="341.0" textFill="BLUE">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Label>
+      <Label layoutX="14.0" layoutY="671.0" text="Ⓒ Jimmy Wu &amp; Weber Hwang 2020" textFill="BLUE">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>
