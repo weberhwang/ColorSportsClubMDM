@@ -26,7 +26,6 @@ public class Login extends Application {
 			primaryStage.setScene(scene);
 			primaryStage.setResizable(false); //不可調整視窗大小
 			primaryStage.show();
-			logger.info("TEST");
 		} catch(Exception e) {
 			logger.info(e.getMessage(), e);
 		}

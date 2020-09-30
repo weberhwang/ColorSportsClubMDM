@@ -11,6 +11,8 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+
 import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -25,8 +27,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 
-import com.wj.clubmdm.copyright.ColorSportsClub;
-
+import rhinoceros.util.aes.AESTool;
 import rhinoceros.util.db.DBConnectionFactory;
 import rhinoceros.util.machine.ChkMachineSN;
 
@@ -68,21 +69,59 @@ public class LoginController extends Application {
 	 * @return true 序號符合 false 序號不符合
 	 */
 	private boolean chkMotherBoardSN() {
-		//取得註冊資訊物件
-		ColorSportsClub csc = new ColorSportsClub();
-		//檢核主機板序號是否符合註冊的序號(隨機版驗證)
-		ChkMachineSN cmsn = new ChkMachineSN();
+		ArrayList<String> snPlainTexts = new ArrayList<String>(); 
+		//取得資料庫中已註冊的亂碼序號並將其解碼後存入ArrayList<String>
+		DBConnectionFactory dbcf = new DBConnectionFactory();
+		String sql = "select * from SerialNumber";
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		AESTool aesTool = new AESTool(); //建立加解密工具
 		try {
-			if (cmsn.getMachineSN().equalsIgnoreCase(csc.getMotherBoardSN())) {
-				return true;
-			} else {
-				labelMsg.setText("此電腦非合法註冊者，無法使用本軟體！");
-				return false;
+			conn = dbcf.getSQLiteCon("", "Club.dll");
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				snPlainTexts.add(aesTool.decrypt(rs.getString("SerialNumber"),aesTool.getKey()));
 			}
 		} catch (Exception e) {
 			logger.info(e.getMessage(), e);
-			return false;
+		} finally {
+			try {
+				rs.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);				
+			}
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);				
+			}
+			try {
+				conn.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);				
+			}
 		}		
+		
+		//檢核 Windows的主機板序號 或 MacOS的作業系統序號 是否符合註冊的序號(隨機版驗證)
+		ChkMachineSN cmsn = new ChkMachineSN();
+		for (String sn : snPlainTexts) {
+			try {
+				/*
+				 * 資料庫SerialNumber Table中任一筆解密後的明文，若與系統的序號相同，則為合法註冊者，
+				 * 直接return true離開迴圈。
+				 */
+				if (cmsn.getMachineSN().equalsIgnoreCase(sn)) {
+					return true;
+				}
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+		}
+		
+		labelMsg.setText("此電腦非合法註冊者，無法使用本軟體！");
+		return false;
 	}
 	
 	/*
