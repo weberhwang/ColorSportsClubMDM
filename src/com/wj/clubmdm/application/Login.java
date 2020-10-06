@@ -24,7 +24,7 @@ public class Login extends Application {
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setTitle("COLOR SPORTS CLUB MDM_V1.0");
 			primaryStage.setScene(scene);
-			primaryStage.setResizable(false); //不可調整視窗大小
+			primaryStage.setResizable(false); //不可調整視窗大小，因為即便視窗放大，裡面的元件不會跟著放大
 			primaryStage.show();
 		} catch(Exception e) {
 			logger.info(e.getMessage(), e);
