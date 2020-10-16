@@ -1,4 +1,5 @@
 /* 
+
  * Colors Sports Club 點名資料上傳 Controller
  * 
  * @author 黃郁授,吳彥儒
@@ -10,6 +11,8 @@ package com.wj.clubmdm.application;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -96,7 +99,7 @@ public class RollCallUploadController extends Application {
 	}
 
 	/*
-	 * 將Excel檔案吃入
+	 * 將TSV檔案吃入
 	 */
 	public void checkRollCallFile() {
 		//提示錯誤的對話框
@@ -117,14 +120,30 @@ public class RollCallUploadController extends Application {
 		rollCallDetails = new TreeMap<String, RollCallDetail>();
 		//將檔案內容讀出
 		UTF8FileReader u8r = new UTF8FileReader();
+		//流水號
+		Integer seqNo = 0;
+		//有問題的筆數
+		Integer errorCount = 0;
 		try {
 			data = u8r.replace(tfFilePath.getText().trim(), "\\s+", "|", true);
 			RollCallDetail rcd = null;
 			//逐一整理
 			for (String s : data) {
-				rcd = new RollCallDetail();
-				if (rcd != null) {
-					//加入rollCallDetails
+				seqNo++; //★改到這邊，這個值有問題。因為第一列為標題列會略過，故變成由2開始，要另立流水號？或由method中直接給流水號
+				/*
+				 * 第1筆為標題列 學員編號	上課日期 >> 略過不處理
+				 * 第2筆開始為資料列，樣式如下
+				 * A000001|2020/9/24|上午|11:09:01
+				 * A000002|2020/9/24|下午|12:08:59
+				 */
+				if (seqNo > 1) {
+					rcd = turnIntoRollCallDetail(s);
+					if (rcd != null) {
+						rcd.setSeqNo(seqNo.toString());
+						rollCallDetails.put(rcd.getRollCallTime() + rcd.getStudentNo(), rcd);
+					} else {
+						errorCount++; //累計有問題筆數
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -138,7 +157,7 @@ public class RollCallUploadController extends Application {
 	 */
 	private RollCallDetail turnIntoRollCallDetail(String rawData) {
 		RollCallDetail rcd = new RollCallDetail();
-		String[] arrayData = rawData.split("|");
+		String[] arrayData = rawData.split("\\|"); //像「|」這種特殊字元做為分隔符號，前面要加\\，split才辨認的出來
 		//第1個欄位的值的格式必須是 A + 6碼流水號，才處理
 		if (arrayData[0].substring(0, 1).equalsIgnoreCase("A") && arrayData[0].length() == 7) {
 			rcd.setStudentNo(arrayData[0]);
@@ -184,14 +203,18 @@ public class RollCallUploadController extends Application {
 		} else {
 			//把小時的部份改為24小時制
 			String[] tempTime = arrayData[3].split(":");
-			Integer hour = null;
+			Integer hour = Integer.parseInt(tempTime[0]);
 			try {
-				hour = Integer.parseInt(tempTime[0]) + adjHours;
 				if (hour >= 13 || hour == 0) {
 					logger.info("點名檔時間格式有誤 上午為12:00-11:59 下午為12:00-11:59 [" + rawData + "]");					
 				}
-				tempTime[0] = hour.toString();
-				arrayData[3] = tempTime[0] + tempTime[1] + tempTime[2];
+				hour = Integer.parseInt(tempTime[0]) + adjHours;
+				if (hour.toString().length() < 2) {
+					tempTime[0] = "0" + hour.toString();										
+				} else {
+					tempTime[0] = hour.toString();					
+				}
+				arrayData[3] = tempTime[0] + ":" + tempTime[1] + ":" + tempTime[2];
 			} catch(Exception e) {
 				logger.info("點名檔時間格式有誤 " + rawData);
 				return null;				
@@ -200,50 +223,70 @@ public class RollCallUploadController extends Application {
 		
 		//到這邊代表時間格式正確，將其組成 yyyy-mm-dd hh(24小時制):mm:ss
 		rcd.setRollCallTime(arrayData[1] + " " + arrayData[3]);
-
-		//取得學員相關資料(★寫到這邊)
-		/*
+		//先預設特色課程為N
+		rcd.setSpecial("N");
+		//★特色課程要用下拉選單(之後再加)
+		//★操作要用下拉選單(之後再加)
+		//取得學員相關資料		
+		//ifnull用法：ifnull(Note,'') 當Note為null時，以空白取代
 		String sql = 
-				"SELECT " + 
-				"	f.name," + 
-				"	(select d.desc from Student s left join CodeDetail d on s.Sex = d.DetailCode and d.MainCode = '001') SexDesc," + 
+				"SELECT " +
+		        "   f.StudentNo," +
+				"	f.Name," + 
 				"	(select d.desc from Student s left join CodeDetail d on s.Department = d.DetailCode and d.MainCode = '004') DepartmentDesc," + 
-				"	(select d.desc from Student s left join CodeDetail d on s.Level = d.DetailCode and d.MainCode = '005') LevelDesc " + 
+				"	(select d.desc from Student s left join CodeDetail d on s.CourseKind = d.DetailCode and d.MainCode = '005') CourseKindDesc," + 
+				"	(select d.desc from Student s left join CodeDetail d on s.Level = d.DetailCode and d.MainCode = '002') LevelDesc " +				
 				"FROM " + 
 				"  Student f " + 
-				"where" + 
+				"WHERE " + 
 				"  f.StudentNo = ?";
 		DBConnectionFactory dbf = new DBConnectionFactory();
 		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		int count = 0; //用來判斷是否有提到學生的對應資料
 		try {
 			
 			conn = dbf.getSQLiteCon("", "Club.dll");
-			if (update) {
-				sql = "update Note set Note = ? where key = 'Stock'";
-			} else {
-				sql = "insert into Note values( '1', ?)";		
-			}
 			pstmt = conn.prepareStatement(sql);
 			pstmt.clearParameters();
-			pstmt.setString(1, taStrategyNote.getText());
-			pstmt.executeUpdate();	
+			pstmt.setString(1, arrayData[0]);
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				count++;
+				rcd.setStudentNo(rs.getString("StudentNo"));
+				rcd.setName(rs.getString("Name"));
+				rcd.setDepartment(rs.getString("DepartmentDesc"));
+				rcd.setCourseKind(rs.getString("CourseKindDesc"));
+				rcd.setLevel(rs.getString("LevelDesc"));
+			}
+			//若沒有找到資料時
+			if (count <= 0) {
+				rcd.setStudentNo(rs.getString("無學員資料"));
+				rcd.setName(rs.getString(""));
+				rcd.setDepartment(rs.getString(""));
+				rcd.setCourseKind(rs.getString(""));
+				rcd.setLevel(rs.getString(""));				
+			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.info(e.getMessage(), e);
 		} finally {
 			try {
+				rs.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+			try {
 				pstmt.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
 			}
 			try {
 				conn.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
 			}
 		}
-		*/
-		
-		
 		return rcd;
 	}
 	

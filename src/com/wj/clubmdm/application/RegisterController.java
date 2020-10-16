@@ -55,7 +55,6 @@ public class RegisterController extends Application {
 	public void snQuery() {
 		ChkMachineSN cmsn = new ChkMachineSN();
 		try {
-			labelDesc.setText("請將下面代碼提供給軟體開發人員以取得註冊碼");
 			labelSN.setText(cmsn.getMachineSN());
 			labelMsg.setText("");
 		} catch (Exception e) {
