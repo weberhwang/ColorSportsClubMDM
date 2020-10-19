@@ -22,9 +22,14 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
-
+import com.wj.clubmdm.component.ChoiceBoxSpecial;
 import com.wj.clubmdm.vo.RollCallDetail;
+
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -73,7 +78,8 @@ public class RollCallUploadController extends Application {
 	@FXML
 	private TableColumn<RollCallDetail, String> colRollCallDate; //點名資料_點名日期	
 	@FXML
-	private TableColumn<RollCallDetail, String> colRollSpecial; //點名資料_特色課程	
+	private TableColumn<RollCallDetail, ChoiceBoxSpecial> colRollSpecial; //點名資料_特色課程	
+	//private TableColumn<RollCallDetail, String> colRollSpecial; //點名資料_特色課程	
 
 	
 	/*
@@ -88,7 +94,8 @@ public class RollCallUploadController extends Application {
 		colCourseKind.setCellValueFactory(new PropertyValueFactory<>("courseKind"));
 		colLevel.setCellValueFactory(new PropertyValueFactory<>("level"));
 		colRollCallDate.setCellValueFactory(new PropertyValueFactory<>("rollCallTime"));
-		colRollSpecial.setCellValueFactory(new PropertyValueFactory<>("special"));
+		colRollSpecial.setCellValueFactory(new PropertyValueFactory<>("cbSpecial"));
+		//colRollSpecial.setCellValueFactory(new PropertyValueFactory<>("special"));
 		//★還缺刪除button及Special要改成下拉選單
 		
 		
@@ -294,7 +301,9 @@ public class RollCallUploadController extends Application {
 		ResultSet rs = null;
 		int count = 0; //用來判斷是否有提到學生的對應資料
 		try {
-			
+			ChoiceBoxSpecial cb = null;
+			//建立ChoiceBox裡面的下拉選單清單，此下拉選單為「特色課程」欄位，只有N/Y兩個值
+			ObservableList<String> items = FXCollections.observableArrayList("N", "Y");			
 			conn = dbf.getSQLiteCon("", "Club.dll");
 			pstmt = conn.prepareStatement(sql);
 			pstmt.clearParameters();
@@ -307,6 +316,22 @@ public class RollCallUploadController extends Application {
 				rcd.setDepartment(rs.getString("DepartmentDesc"));
 				rcd.setCourseKind(rs.getString("CourseKindDesc"));
 				rcd.setLevel(rs.getString("LevelDesc"));
+				
+				//-----------
+				cb = new ChoiceBoxSpecial();
+				cb.autosize();
+				cb.setItems(items);
+				cb.setRollCallTime(rcd.getRollCallTime());
+				cb.setStudentNo(rcd.getStudentNo());
+				cb.getSelectionModel().select("N"); //把N當成預設值
+				cb.setOnAction(new EventHandler<ActionEvent>() {
+			        public void handle(ActionEvent event) {
+			        	ChoiceBoxSpecial cbSpecial = (ChoiceBoxSpecial)event.getSource();
+			        	//★加一個method處理改成N這件事
+			        }
+			    });	
+				rcd.setCbSpecial(cb); //把下拉選單加給RollCallDetail物件，當作屬性
+				//-----------
 			}
 			//若沒有找到資料時
 			if (count <= 0) {

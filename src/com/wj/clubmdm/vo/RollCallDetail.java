@@ -1,10 +1,12 @@
 /* 
- * Colors Sports Club 點名資料每一最的對應資料
+ * Colors Sports Club 點名資料每一列的對應資料
  * @author 黃郁授,吳彥儒
  * @date 2020/09/22
  */
 
 package com.wj.clubmdm.vo;
+
+import com.wj.clubmdm.component.ChoiceBoxSpecial;
 
 public class RollCallDetail {
 	private String seqNo; //序號
@@ -15,6 +17,8 @@ public class RollCallDetail {
 	private String level; //程度
 	private String rollCallTime; //點名時間
 	private String special; //特色課程
+	private ChoiceBoxSpecial cbSpecial; //特色課程(下拉選單)
+	
 	public String getSeqNo() {
 		return seqNo;
 	}
@@ -62,5 +66,11 @@ public class RollCallDetail {
 	}
 	public void setSpecial(String special) {
 		this.special = special;
-	}	
+	}
+	public ChoiceBoxSpecial getCbSpecial() {
+		return cbSpecial;
+	}
+	public void setCbSpecial(ChoiceBoxSpecial cbSpecial) {
+		this.cbSpecial = cbSpecial;
+	}
 }
