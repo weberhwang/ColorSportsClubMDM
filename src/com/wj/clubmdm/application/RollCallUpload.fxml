@@ -36,16 +36,16 @@
             <Font name="System Bold" size="16.0" />
          </font>
       </Label>
-      <TableView layoutX="52.0" layoutY="128.0" prefHeight="536.0" prefWidth="745.0">
+      <TableView fx:id="tvRollCallDetail" layoutX="52.0" layoutY="128.0" prefHeight="536.0" prefWidth="745.0">
          <columns>
-            <TableColumn prefWidth="45.0" text="序號" />
-            <TableColumn prefWidth="75.0" text="學員編號" />
-            <TableColumn prefWidth="86.0" text="姓名" />
-            <TableColumn prefWidth="72.0" text="上課分部" />
-            <TableColumn prefWidth="61.0" text="類別" />
-            <TableColumn prefWidth="68.0" text="程度" />
-            <TableColumn prefWidth="136.0" text="點名時間" />
-            <TableColumn prefWidth="66.0" text="特色課程" />
+            <TableColumn fx:id="colSeqNo" prefWidth="45.0" text="序號" />
+            <TableColumn fx:id="colStudentNo" prefWidth="75.0" text="學員編號" />
+            <TableColumn fx:id="colName" prefWidth="86.0" text="姓名" />
+            <TableColumn fx:id="colDepartment" prefWidth="72.0" text="上課分部" />
+            <TableColumn fx:id="colCourseKind" prefWidth="61.0" text="類別" />
+            <TableColumn fx:id="colLevel" prefWidth="68.0" text="程度" />
+            <TableColumn fx:id="colRollCallDate" prefWidth="136.0" text="點名時間" />
+            <TableColumn fx:id="colRollSpecial" prefWidth="66.0" text="特色課程" />
             <TableColumn prefWidth="135.0" text="操作" />
          </columns>
       </TableView>

@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
@@ -31,6 +32,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
@@ -57,6 +59,8 @@ public class RollCallUploadController extends Application {
 	@FXML
 	private TableView<RollCallDetail> tvRollCallDetail; //點名資料
 	@FXML
+	private TableColumn<RollCallDetail, String> colSeqNo; //點名資料_流水號
+	@FXML
 	private TableColumn<RollCallDetail, String> colStudentNo; //點名資料_學員編號
 	@FXML
 	private TableColumn<RollCallDetail, String> colName; //點名資料_姓名
@@ -76,6 +80,18 @@ public class RollCallUploadController extends Application {
 	 * 初始化
 	 */
 	public void initialize() {
+		//建立上傳登錄明細TableView資料連結
+		colSeqNo.setCellValueFactory(new PropertyValueFactory<>("seqNo"));
+		colStudentNo.setCellValueFactory(new PropertyValueFactory<>("studentNo"));
+		colName.setCellValueFactory(new PropertyValueFactory<>("name"));
+		colDepartment.setCellValueFactory(new PropertyValueFactory<>("department"));
+		colCourseKind.setCellValueFactory(new PropertyValueFactory<>("courseKind"));
+		colLevel.setCellValueFactory(new PropertyValueFactory<>("level"));
+		colRollCallDate.setCellValueFactory(new PropertyValueFactory<>("rollCallTime"));
+		colRollSpecial.setCellValueFactory(new PropertyValueFactory<>("special"));
+		//★還缺刪除button及Special要改成下拉選單
+		
+		
 		//設定日期選擇器的格式
 		StringConverter<LocalDate> converter = new StringConverter<LocalDate>() {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -120,7 +136,9 @@ public class RollCallUploadController extends Application {
 		rollCallDetails = new TreeMap<String, RollCallDetail>();
 		//將檔案內容讀出
 		UTF8FileReader u8r = new UTF8FileReader();
-		//流水號
+		//用來判斷第一筆(欄位標題)不吃的計算器
+		Integer rowCount = 0;
+		//流水號(不含標題列)
 		Integer seqNo = 0;
 		//有問題的筆數
 		Integer errorCount = 0;
@@ -129,27 +147,55 @@ public class RollCallUploadController extends Application {
 			RollCallDetail rcd = null;
 			//逐一整理
 			for (String s : data) {
-				seqNo++; //★改到這邊，這個值有問題。因為第一列為標題列會略過，故變成由2開始，要另立流水號？或由method中直接給流水號
+				rowCount++;
 				/*
 				 * 第1筆為標題列 學員編號	上課日期 >> 略過不處理
 				 * 第2筆開始為資料列，樣式如下
 				 * A000001|2020/9/24|上午|11:09:01
 				 * A000002|2020/9/24|下午|12:08:59
 				 */
-				if (seqNo > 1) {
+				if (rowCount > 1) {
 					rcd = turnIntoRollCallDetail(s);
 					if (rcd != null) {
-						rcd.setSeqNo(seqNo.toString());
-						rollCallDetails.put(rcd.getRollCallTime() + rcd.getStudentNo(), rcd);
+						//先確認資料是否有重覆
+						if (rollCallDetails.containsKey(rcd.getRollCallTime() + rcd.getStudentNo())) {
+							logger.info(rcd.getRollCallTime() + " " + rcd.getStudentNo() + "點名資料重覆，自動排除(只保留1筆)。");
+						} else {
+							seqNo++;
+							rcd.setSeqNo(seqNo.toString());
+							rollCallDetails.put(rcd.getRollCallTime() + rcd.getStudentNo(), rcd);							
+						}
 					} else {
 						errorCount++; //累計有問題筆數
 					}
 				}
 			}
 		} catch (Exception e) {
+			alert.setHeaderText("點名檔內容格式有誤！");
+			alert.setContentText("請確認點名檔內文！");
+			alert.showAndWait();
 			logger.info(e.getMessage(), e);
+			return;		
 		}
-		
+		// 能到這邊代表點名檔讀取成功
+		showRollCallDetail();
+		// 若有問題筆數>0，則提醒
+		if (errorCount > 0) {
+			alert.setHeaderText("提醒");
+			alert.setContentText("有 " + errorCount.toString() + " 筆 點名資料有誤，請確認點名檔內文格式，修正後，重新執行「檢查檔案資料」！");
+			alert.showAndWait();			
+		}
+	}
+
+	/*
+	 * 將上傳已整理至TreeMap的資料秀至TableView裡面
+	 */
+	private void showRollCallDetail() {
+		tvRollCallDetail.getItems().clear(); //先清除TableView中的明細
+		Iterator<String> iter = rollCallDetails.keySet().iterator();
+		while (iter.hasNext()) {
+			tvRollCallDetail.getItems().add(rollCallDetails.get((String)iter.next()));
+		}
 	}
 	
 	/*
@@ -187,16 +233,12 @@ public class RollCallUploadController extends Application {
 		arrayData[1] = tempDate[0] + "-" + tempDate[1] + "-" + tempDate[2];
 		
 		//第3個欄位欄位必須是 上午 or 下午 這兩個字樣
-		Integer adjHours = null;
-		if (arrayData[2].equalsIgnoreCase("上午")) {
-			adjHours = -12;
-		} else if (arrayData[2].equalsIgnoreCase("下午")) {
-			adjHours = 0;
+		if (arrayData[2].equalsIgnoreCase("上午") || arrayData[2].equalsIgnoreCase("下午")) {		
 		} else {
 			logger.info("點名檔時間格式有誤，缺少上午、下午字樣 [" + rawData + "]");
-			return null;
+			return null;			
 		}
-		
+				
 		//第4個欄位為HH:MM:SS
 		if (arrayData[3].length() != 8) {
 			return null;
@@ -206,9 +248,15 @@ public class RollCallUploadController extends Application {
 			Integer hour = Integer.parseInt(tempTime[0]);
 			try {
 				if (hour >= 13 || hour == 0) {
-					logger.info("點名檔時間格式有誤 上午為12:00-11:59 下午為12:00-11:59 [" + rawData + "]");					
+					logger.info("點名檔時間格式有誤 上午為12:00-11:59 下午為12:00-11:59 [" + rawData + "]");
+					return null;
 				}
-				hour = Integer.parseInt(tempTime[0]) + adjHours;
+	
+				// 上午12:01:59，若轉成24小時制的話，是00:01:59，故只有在上午且小時為12時，要改小時為0
+				if (arrayData[2].equalsIgnoreCase("上午") && hour == 12) {
+					hour = 0;
+				}	
+				
 				if (hour.toString().length() < 2) {
 					tempTime[0] = "0" + hour.toString();										
 				} else {
@@ -289,8 +337,7 @@ public class RollCallUploadController extends Application {
 		}
 		return rcd;
 	}
-	
-	
+		
 	/*
 	 * 檢查輸入欄位
 	 */
@@ -329,8 +376,7 @@ public class RollCallUploadController extends Application {
 			tfFilePath.setText("");						
 		}
 	}
-	
-	
+		
 	@Override
 	public void start(Stage arg0) throws Exception {
 		
