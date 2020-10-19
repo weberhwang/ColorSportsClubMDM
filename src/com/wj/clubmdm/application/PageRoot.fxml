@@ -12,7 +12,7 @@
 			<Tab text="學員資料維護">
 				<fx:include source="StudentMaintain.fxml"/>
 			</Tab>
-			<Tab text="課堂點名資料上傳">
+			<Tab text="課堂點名資料匯入">
 				<fx:include source="RollCallUpload.fxml"/>
 			</Tab>
 			<Tab text="課堂點名資料維護">

@@ -6,6 +6,7 @@
 
 package com.wj.clubmdm.vo;
 
+import com.wj.clubmdm.component.ChoiceBoxImport;
 import com.wj.clubmdm.component.ChoiceBoxSpecial;
 
 public class RollCallDetail {
@@ -18,6 +19,7 @@ public class RollCallDetail {
 	private String rollCallTime; //點名時間
 	private String special; //特色課程
 	private ChoiceBoxSpecial cbSpecial; //特色課程(下拉選單)
+	private ChoiceBoxImport cbImport; //是否匯入(下拉選單)
 	
 	public String getSeqNo() {
 		return seqNo;
@@ -72,5 +74,11 @@ public class RollCallDetail {
 	}
 	public void setCbSpecial(ChoiceBoxSpecial cbSpecial) {
 		this.cbSpecial = cbSpecial;
+	}
+	public ChoiceBoxImport getCbImport() {
+		return cbImport;
+	}
+	public void setCbImport(ChoiceBoxImport cbImport) {
+		this.cbImport = cbImport;
 	}
 }

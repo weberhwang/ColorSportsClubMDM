@@ -46,10 +46,10 @@
             <TableColumn fx:id="colLevel" prefWidth="68.0" text="程度" />
             <TableColumn fx:id="colRollCallDate" prefWidth="136.0" text="點名時間" />
             <TableColumn fx:id="colRollSpecial" prefWidth="66.0" text="特色課程" />
-            <TableColumn prefWidth="135.0" text="操作" />
+            <TableColumn fx:id="colRollImport" prefWidth="135.0" text="是否匯入" />
          </columns>
       </TableView>
-      <Button layoutX="166.0" layoutY="88.0" mnemonicParsing="false" prefHeight="23.0" prefWidth="129.0" text="確認匯入點名檔">
+      <Button fx:id="btnImport" layoutX="166.0" layoutY="88.0" mnemonicParsing="false" onAction="#readTableView" prefHeight="23.0" prefWidth="129.0" text="確認匯入點名檔">
          <font>
             <Font size="14.0" />
          </font>

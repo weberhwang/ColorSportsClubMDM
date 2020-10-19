@@ -1,5 +1,5 @@
 /* 
- * Colors Sports Club 點名資料每一列使用的特色課程的下拉選單
+ * Colors Sports Club 點名資料每一列是否匯入的下拉選單，預設是要匯入
  * @author 黃郁授,吳彥儒
  * @date 2020/10/19
  */
@@ -8,7 +8,7 @@ package com.wj.clubmdm.component;
 
 import javafx.scene.control.ChoiceBox;
 
-public class ChoiceBoxSpecial extends ChoiceBox<String> {
+public class ChoiceBoxImport extends ChoiceBox<String> {
 	private String rollCallTime;
 	private String studentNo;
 	public String getRollCallTime() {

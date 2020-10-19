@@ -4,16 +4,23 @@
  * 
  * @author 黃郁授,吳彥儒
  * @date 2020/09/22
+ * 
+ * 備忘：
+ * 1.因為已經有了特色課程下拉選單，原本的RollCallDetail裡面的special相關程式碼是否仍要保留(等要寫資料庫時再決定)
+ * 2.上傳批次記錄那邊增加刪除已寫入資料庫的點名資料(整批刪除)
+ * 3.寫入資料庫後，記得於上傳批次紀錄新增一筆
+ * 4.上傳檔時，檢核是否已上傳過該日的資料
  */
 
 package com.wj.clubmdm.application;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -22,14 +29,13 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
+import com.wj.clubmdm.component.ChoiceBoxImport;
 import com.wj.clubmdm.component.ChoiceBoxSpecial;
 import com.wj.clubmdm.vo.RollCallDetail;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -41,6 +47,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import rhinoceros.util.date.SystemTime;
 import rhinoceros.util.db.DBConnectionFactory;
 import rhinoceros.util.file.UTF8FileReader;
 
@@ -50,17 +57,23 @@ public class RollCallUploadController extends Application {
 	private Logger logger = Logger.getLogger(RollCallUploadController.class);
 	//暫存點名資料用
 	private TreeMap<String, RollCallDetail> rollCallDetails = null;
+	//暫存讀取時的點名檔絕對路徑
+	private String fromPath = null;
+	//備份時點名檔的目錄名稱
+	private String backupFolder = "backup";
+	//暫存選擇的點名日期
+	private String rollCallDate = "";
 	
 	@FXML
 	private DatePicker dpChoiceRollCallDate; //選擇點名日期
-	@FXML
-	private TextField tfRollCallDate; //點名日期
 	@FXML
 	private TextField tfFilePath; //點名檔絕對路徑
 	@FXML
 	private Button btnChoiceRollCallFile; //選擇點名檔
 	@FXML
 	private Button btnCheckData; //檢查檔案資料
+	@FXML
+	private Button btnImport; //確認匯入點名檔
 	@FXML
 	private TableView<RollCallDetail> tvRollCallDetail; //點名資料
 	@FXML
@@ -80,8 +93,9 @@ public class RollCallUploadController extends Application {
 	@FXML
 	private TableColumn<RollCallDetail, ChoiceBoxSpecial> colRollSpecial; //點名資料_特色課程	
 	//private TableColumn<RollCallDetail, String> colRollSpecial; //點名資料_特色課程	
+	@FXML
+	private TableColumn<RollCallDetail, ChoiceBoxImport> colRollImport; //點名資料_是否匯入	
 
-	
 	/*
 	 * 初始化
 	 */
@@ -96,6 +110,8 @@ public class RollCallUploadController extends Application {
 		colRollCallDate.setCellValueFactory(new PropertyValueFactory<>("rollCallTime"));
 		colRollSpecial.setCellValueFactory(new PropertyValueFactory<>("cbSpecial"));
 		//colRollSpecial.setCellValueFactory(new PropertyValueFactory<>("special"));
+		colRollImport.setCellValueFactory(new PropertyValueFactory<>("cbImport"));
+
 		//★還缺刪除button及Special要改成下拉選單
 		
 		
@@ -125,18 +141,26 @@ public class RollCallUploadController extends Application {
 	 * 將TSV檔案吃入
 	 */
 	public void checkRollCallFile() {
-		//提示錯誤的對話框
-		Alert alert = new Alert(Alert.AlertType.ERROR);
-		alert.setHeaderText("資料輸入有誤");
 		
 		chkField(); //檢核欄位值
 		//檢核Excel檔案是否存在
 		File file = new File(tfFilePath.getText().trim());
+
+		//提示錯誤的對話框
+		Alert alert = new Alert(Alert.AlertType.ERROR);
 		if (!file.exists()) {
+			alert.setHeaderText("資料輸入有誤");
 			alert.setContentText("點名檔不存在，請確認檔案路徑！");
 			alert.showAndWait();
 			return;		
 		}
+		
+		//把讀檔來源的絕對路徑先暫存
+		fromPath = tfFilePath.getText().trim(); 
+		
+		//暫存所選擇的日期，轉成yyyyMMdd這個格式
+		rollCallDate = dpChoiceRollCallDate.getValue().toString().replace("-", "");		
+		
 		//建立用來存TSV檔裡面內容的暫存變數
 		ArrayList<String> data = null; 
 		//建立之後要給點名資料ViewTable用的暫存變數
@@ -166,7 +190,9 @@ public class RollCallUploadController extends Application {
 					if (rcd != null) {
 						//先確認資料是否有重覆
 						if (rollCallDetails.containsKey(rcd.getRollCallTime() + rcd.getStudentNo())) {
-							logger.info(rcd.getRollCallTime() + " " + rcd.getStudentNo() + "點名資料重覆，自動排除(只保留1筆)。");
+							errorCount++;
+							logger.info(s + " 資料重覆，自動排除(只保留1筆)。");
+							//logger.info(rcd.getRollCallTime() + " " + rcd.getStudentNo() + " 點名資料重覆，自動排除(只保留1筆)。");
 						} else {
 							seqNo++;
 							rcd.setSeqNo(seqNo.toString());
@@ -189,7 +215,7 @@ public class RollCallUploadController extends Application {
 		// 若有問題筆數>0，則提醒
 		if (errorCount > 0) {
 			alert.setHeaderText("提醒");
-			alert.setContentText("有 " + errorCount.toString() + " 筆 點名資料有誤，請確認點名檔內文格式，修正後，重新執行「檢查檔案資料」！");
+			alert.setContentText("共 " + errorCount.toString() + " 筆 寫入暫存表格失敗，請確認點名檔內文，修正後，重新執行「檢查檔案資料」！");
 			alert.showAndWait();			
 		}
 	}
@@ -215,7 +241,7 @@ public class RollCallUploadController extends Application {
 		if (arrayData[0].substring(0, 1).equalsIgnoreCase("A") && arrayData[0].length() == 7) {
 			rcd.setStudentNo(arrayData[0]);
 		} else {
-			logger.info("點名檔員編格式不正確 [" + rawData + "]");
+			logger.info(rawData + " 學員編號格式不正確");
 			return null;
 		}
 		
@@ -224,7 +250,7 @@ public class RollCallUploadController extends Application {
 		
 		//年份欄位若不是4碼代表資料有問題
 		if (tempDate[0].length() != 4) {
-			logger.info("點名檔年份不正確 [" + rawData + "]");
+			logger.info(rawData + " 年份不正確");
 			return null;
 		}
 		
@@ -242,7 +268,7 @@ public class RollCallUploadController extends Application {
 		//第3個欄位欄位必須是 上午 or 下午 這兩個字樣
 		if (arrayData[2].equalsIgnoreCase("上午") || arrayData[2].equalsIgnoreCase("下午")) {		
 		} else {
-			logger.info("點名檔時間格式有誤，缺少上午、下午字樣 [" + rawData + "]");
+			logger.info(rawData + " 點名時間格式有誤，缺少上午、下午字樣");
 			return null;			
 		}
 				
@@ -255,7 +281,7 @@ public class RollCallUploadController extends Application {
 			Integer hour = Integer.parseInt(tempTime[0]);
 			try {
 				if (hour >= 13 || hour == 0) {
-					logger.info("點名檔時間格式有誤 上午為12:00-11:59 下午為12:00-11:59 [" + rawData + "]");
+					logger.info(rawData + " 點名時間格式有誤 上午為12:00-11:59 下午為12:00-11:59");
 					return null;
 				}
 	
@@ -271,9 +297,15 @@ public class RollCallUploadController extends Application {
 				}
 				arrayData[3] = tempTime[0] + ":" + tempTime[1] + ":" + tempTime[2];
 			} catch(Exception e) {
-				logger.info("點名檔時間格式有誤 " + rawData);
+				logger.info(rawData + " 點名時間格式有誤 ");
 				return null;				
 			}
+		}
+		
+		//若資料的點名日期與上方選擇的匯入日不符合時，則不列入TableView中
+		if (!arrayData[1].equalsIgnoreCase(dpChoiceRollCallDate.getValue().toString())) {
+			logger.info(rawData + " 點名日期 與 選擇的「點名日期」不一致，此筆資料已被忽略。");
+			return null;
 		}
 		
 		//到這邊代表時間格式正確，將其組成 yyyy-mm-dd hh(24小時制):mm:ss
@@ -301,9 +333,14 @@ public class RollCallUploadController extends Application {
 		ResultSet rs = null;
 		int count = 0; //用來判斷是否有提到學生的對應資料
 		try {
-			ChoiceBoxSpecial cb = null;
-			//建立ChoiceBox裡面的下拉選單清單，此下拉選單為「特色課程」欄位，只有N/Y兩個值
-			ObservableList<String> items = FXCollections.observableArrayList("N", "Y");			
+			ChoiceBoxSpecial cbSpecial = null;
+			//建立 特色課程 下拉選單的清單內容，此下拉選單為「特色課程」欄位，只有N/Y兩個值
+			ObservableList<String> specialItems = FXCollections.observableArrayList("N", "Y");			
+
+			ChoiceBoxImport cbImport = null;
+			//建立 是否匯入 下拉選單的清單內容，此下拉選單為「是否匯入」欄位，只有N/Y兩個值
+			ObservableList<String> importItems = FXCollections.observableArrayList("Y", "N");			
+			
 			conn = dbf.getSQLiteCon("", "Club.dll");
 			pstmt = conn.prepareStatement(sql);
 			pstmt.clearParameters();
@@ -317,21 +354,40 @@ public class RollCallUploadController extends Application {
 				rcd.setCourseKind(rs.getString("CourseKindDesc"));
 				rcd.setLevel(rs.getString("LevelDesc"));
 				
-				//-----------
-				cb = new ChoiceBoxSpecial();
-				cb.autosize();
-				cb.setItems(items);
-				cb.setRollCallTime(rcd.getRollCallTime());
-				cb.setStudentNo(rcd.getStudentNo());
-				cb.getSelectionModel().select("N"); //把N當成預設值
-				cb.setOnAction(new EventHandler<ActionEvent>() {
+				//建立特色課程的下拉選單(預設N)
+				cbSpecial = new ChoiceBoxSpecial();
+				cbSpecial.autosize();
+				cbSpecial.setItems(specialItems);
+				cbSpecial.setRollCallTime(rcd.getRollCallTime());
+				cbSpecial.setStudentNo(rcd.getStudentNo());
+				cbSpecial.getSelectionModel().select("N"); //把N當成預設值
+				/*
+				cbSpecial.setOnAction(new EventHandler<ActionEvent>() {
 			        public void handle(ActionEvent event) {
 			        	ChoiceBoxSpecial cbSpecial = (ChoiceBoxSpecial)event.getSource();
 			        	//★加一個method處理改成N這件事
 			        }
-			    });	
-				rcd.setCbSpecial(cb); //把下拉選單加給RollCallDetail物件，當作屬性
-				//-----------
+			    });
+			    */	
+
+				//建立是否匯入的下拉選單(預設y)
+				cbImport = new ChoiceBoxImport();
+				cbImport.autosize();
+				cbImport.setItems(importItems);
+				cbImport.setRollCallTime(rcd.getRollCallTime());
+				cbImport.setStudentNo(rcd.getStudentNo());
+				cbImport.getSelectionModel().select("Y"); //把N當成預設值
+				/*
+				cbImport.setOnAction(new EventHandler<ActionEvent>() {
+			        public void handle(ActionEvent event) {
+			        	ChoiceBoxImport cbSpecial = (ChoiceBoxImport)event.getSource();
+			        	//★加一個method處理改成N這件事
+			        }
+			    });
+			    */	
+				
+				rcd.setCbSpecial(cbSpecial); //把特色課程的下拉選單加給RollCallDetail物件，當作屬性
+				rcd.setCbImport(cbImport); //把匯入的下拉選單加給RollCallDetail物件，當作屬性
 			}
 			//若沒有找到資料時
 			if (count <= 0) {
@@ -340,6 +396,8 @@ public class RollCallUploadController extends Application {
 				rcd.setDepartment(rs.getString(""));
 				rcd.setCourseKind(rs.getString(""));
 				rcd.setLevel(rs.getString(""));				
+				rcd.setCbSpecial(cbSpecial); //把特色課程的下拉選單加給RollCallDetail物件，當作屬性
+				rcd.setCbImport(cbImport); //把匯入的下拉選單加給RollCallDetail物件，當作屬性
 			}
 		} catch (Exception e) {
 			logger.info(e.getMessage(), e);
@@ -402,6 +460,95 @@ public class RollCallUploadController extends Application {
 		}
 	}
 		
+	/*
+	 * 讀取TableVeiw資料，寫入資料庫
+	 */
+	public void readTableView() {
+		//判斷TableView的筆數，若=0，則代表要重新再檢查資料
+		if (tvRollCallDetail.getItems().size() <= 0) {
+			logger.info("表格中無資料，請重新執行「檢查檔案資料」！");
+			return;
+		}
+		
+		//取得現在的系統時間做為檔名
+		SystemTime st = new SystemTime();
+		String backupFileName = "color_rollcall_" + rollCallDate + "_" + st.getNowTime("yyyyMMddHHmmss") + ".tsv";
+	    String backupPath = backupFolder + "/" + backupFileName;
+
+	    //複製檔案
+	    try {
+	    	FileOutputStream fos = new FileOutputStream(new File(backupPath));
+	    	Path inputPath = new File(fromPath).toPath();
+	    	Files.copy(inputPath, fos);
+	    } catch(Exception e) {
+	    	logger.info("檔案備份失敗，請洽系統開發人員！");
+	    	logger.info(e.getMessage(), e);
+	    }
+	    
+	    //寫一筆到資料庫 RollCallUploadBatch Table(批次上傳記錄)中 
+	    String sqlInsertBatch = "insert into RollCallUploadBatch values(?, ?, ?)";
+		DBConnectionFactory dbcf = new DBConnectionFactory();
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		try {
+			conn = dbcf.getSQLiteCon("", "Club.dll");
+			pstmt = conn.prepareStatement(sqlInsertBatch);
+			pstmt.setString(1, backupFileName);
+			pstmt.setString(2, rollCallDate);
+			pstmt.setString(3, st.getNowTime("yyyyMMddHHmmssSSS"));
+			pstmt.executeUpdate();				
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);
+		} finally {
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);				
+			}
+			try {
+				conn.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);				
+			}
+		}	
+	    
+		//取得TableView各列資料並寫入資料庫
+		String insertSystemTime = st.getNowTime("yyyyMMddHHmmssSSS");
+		String sqlInsertDetail = "insert into RollCallUploadDetail values(?, ?, ?, ?, ?, null)";
+		ObservableList<RollCallDetail> rcds = tvRollCallDetail.getItems();
+		for(RollCallDetail data : rcds) {
+			try {
+				conn = dbcf.getSQLiteCon("", "Club.dll");
+				pstmt = conn.prepareStatement(sqlInsertDetail);
+				pstmt.setString(1, backupFileName);
+				pstmt.setString(2, data.getStudentNo());
+				pstmt.setString(3, data.getRollCallTime());
+				pstmt.setString(4, data.getCbSpecial().getValue());
+				pstmt.setString(5, insertSystemTime);
+				pstmt.executeUpdate();				
+			} catch (Exception e) {
+				logger.info(data.getStudentNo() + " " + data.getRollCallTime() + " 資料已存在!");
+				logger.info(e.getMessage(), e);
+			} 	
+		}
+		try {
+			pstmt.close();
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);				
+		}
+		try {
+			conn.close();
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);				
+		}
+		
+		/*
+		 * ★寫到這邊，加一個button，可以查批次記錄
+		 * 寫入完成，要出訊息，並清TableView避免重複寫入，重新更新批次記錄
+		 * 加一個刪除批次的功能
+		 */
+	}
+	
 	@Override
 	public void start(Stage arg0) throws Exception {
 		
