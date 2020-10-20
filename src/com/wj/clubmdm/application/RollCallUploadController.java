@@ -25,20 +25,27 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
+import com.wj.clubmdm.component.BtnDelRollCallUpload;
 import com.wj.clubmdm.component.ChoiceBoxImport;
 import com.wj.clubmdm.component.ChoiceBoxSpecial;
-import com.wj.clubmdm.vo.RollCallDetail;
+import com.wj.clubmdm.vo.RollCallUploadBatch;
+import com.wj.clubmdm.vo.RollCallUploadDetail;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -56,7 +63,7 @@ public class RollCallUploadController extends Application {
 	
 	private Logger logger = Logger.getLogger(RollCallUploadController.class);
 	//暫存點名資料用
-	private TreeMap<String, RollCallDetail> rollCallDetails = null;
+	private TreeMap<String, RollCallUploadDetail> rollCallDetails = null;
 	//暫存讀取時的點名檔絕對路徑
 	private String fromPath = null;
 	//備份時點名檔的目錄名稱
@@ -67,6 +74,8 @@ public class RollCallUploadController extends Application {
 	@FXML
 	private DatePicker dpChoiceRollCallDate; //選擇點名日期
 	@FXML
+	private Button btnQueryBatch; //查詢上傳批次紀錄
+	@FXML
 	private TextField tfFilePath; //點名檔絕對路徑
 	@FXML
 	private Button btnChoiceRollCallFile; //選擇點名檔
@@ -75,27 +84,35 @@ public class RollCallUploadController extends Application {
 	@FXML
 	private Button btnImport; //確認匯入點名檔
 	@FXML
-	private TableView<RollCallDetail> tvRollCallDetail; //點名資料
+	private TableView<RollCallUploadDetail> tvRollCallDetail; //點名資料
 	@FXML
-	private TableColumn<RollCallDetail, String> colSeqNo; //點名資料_流水號
+	private TableColumn<RollCallUploadDetail, String> colSeqNo; //點名資料_流水號
 	@FXML
-	private TableColumn<RollCallDetail, String> colStudentNo; //點名資料_學員編號
+	private TableColumn<RollCallUploadDetail, String> colStudentNo; //點名資料_學員編號
 	@FXML
-	private TableColumn<RollCallDetail, String> colName; //點名資料_姓名
+	private TableColumn<RollCallUploadDetail, String> colName; //點名資料_姓名
 	@FXML
-	private TableColumn<RollCallDetail, String> colDepartment; //點名資料_上課分部
+	private TableColumn<RollCallUploadDetail, String> colDepartment; //點名資料_上課分部
 	@FXML
-	private TableColumn<RollCallDetail, String> colCourseKind; //點名資料_類別
+	private TableColumn<RollCallUploadDetail, String> colCourseKind; //點名資料_類別
 	@FXML
-	private TableColumn<RollCallDetail, String> colLevel; //點名資料_程度
+	private TableColumn<RollCallUploadDetail, String> colLevel; //點名資料_程度
 	@FXML
-	private TableColumn<RollCallDetail, String> colRollCallDate; //點名資料_點名日期	
+	private TableColumn<RollCallUploadDetail, String> colRollCallDate; //點名資料_點名日期	
 	@FXML
-	private TableColumn<RollCallDetail, ChoiceBoxSpecial> colRollSpecial; //點名資料_特色課程	
+	private TableColumn<RollCallUploadDetail, ChoiceBoxSpecial> colRollSpecial; //點名資料_特色課程	
 	//private TableColumn<RollCallDetail, String> colRollSpecial; //點名資料_特色課程	
 	@FXML
-	private TableColumn<RollCallDetail, ChoiceBoxImport> colRollImport; //點名資料_是否匯入	
-
+	private TableColumn<RollCallUploadDetail, ChoiceBoxImport> colRollImport; //點名資料_是否匯入	
+	@FXML
+	private TableView<RollCallUploadBatch> tvRollCallBatch; //點名批次
+	@FXML
+	private TableColumn<RollCallUploadBatch, String> colBatchRollCallDate; //點名批次_點名日期
+	@FXML
+	private TableColumn<RollCallUploadBatch, String> colBatchRollCreateTime; //點名批次_匯入時間
+	@FXML
+	private TableColumn<RollCallUploadBatch, BtnDelRollCallUpload> colBatchDel; //點名批次_刪除
+	
 	/*
 	 * 初始化
 	 */
@@ -112,8 +129,10 @@ public class RollCallUploadController extends Application {
 		//colRollSpecial.setCellValueFactory(new PropertyValueFactory<>("special"));
 		colRollImport.setCellValueFactory(new PropertyValueFactory<>("cbImport"));
 
-		//★還缺刪除button及Special要改成下拉選單
-		
+		//建立上傳批次TableView資料連結
+		colBatchRollCallDate.setCellValueFactory(new PropertyValueFactory<>("rollCallDate"));
+		colBatchRollCreateTime.setCellValueFactory(new PropertyValueFactory<>("createTime"));
+		colBatchDel.setCellValueFactory(new PropertyValueFactory<>("btnDelBatch"));		
 		
 		//設定日期選擇器的格式
 		StringConverter<LocalDate> converter = new StringConverter<LocalDate>() {
@@ -137,6 +156,147 @@ public class RollCallUploadController extends Application {
 		dpChoiceRollCallDate.setConverter(converter);		
 	}
 
+	/*
+	 * 查詢點名檔上傳批次
+	 */
+	public void queryUploadBatch() {
+		tvRollCallBatch.getItems().clear(); //清除點名批次TableView
+		String sql = 
+				"SELECT " +
+			    "   FileName," +
+		        "   RollCallDate," +
+				"	CreateTime " + 
+				"FROM " + 
+				"  RollCallUploadBatch " + 
+				"ORDER BY CreateTime DESC";
+		DBConnectionFactory dbf = new DBConnectionFactory();
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try {		
+			RollCallUploadBatch rcub = null;  
+			String rollCallDateTemp = null; //yyyy-mm-dd
+			String rollCallImportTimeTemp = null; //只秀到秒 yyyy-mm-dd HH:mm:ss
+			BtnDelRollCallUpload btnDel = null;
+			conn = dbf.getSQLiteCon("", "Club.dll");
+			pstmt = conn.prepareStatement(sql);
+			pstmt.clearParameters();
+			rs = pstmt.executeQuery();
+			/*
+			 * 01234567890ABC
+			 * yyyymmddHHmmssSSS
+			 */
+			while (rs.next()) {
+				rcub = new RollCallUploadBatch();
+				rcub.setFileName(rs.getString("FileName"));
+				
+				//把點名日期由yyyymmdd轉成yyyy-mm-dd格式秀至TableView
+				rollCallDateTemp = rs.getString("RollCallDate");
+				rollCallDateTemp = rollCallDateTemp.substring(0, 4) + "-" + rollCallDateTemp.substring(4, 6) + "-" + rollCallDateTemp.substring(6);				
+				rcub.setRollCallDate(rollCallDateTemp);
+				
+				//把匯入時間由yyyymmddHHmmssSSS轉成yyyy-mm-dd HH:mm:ss(捨棄毫秒)
+				rollCallImportTimeTemp = rs.getString("CreateTime");
+				rollCallImportTimeTemp = 
+						rollCallImportTimeTemp.substring(0, 4) + "-" +
+						rollCallImportTimeTemp.substring(4, 6) + "-" +
+						rollCallImportTimeTemp.substring(6, 8) + " " +
+						rollCallImportTimeTemp.substring(8, 10) + ":" +
+						rollCallImportTimeTemp.substring(10, 12) + ":" +
+						rollCallImportTimeTemp.substring(12, 14);
+						
+				rcub.setCreateTime(rollCallImportTimeTemp);
+				btnDel = new BtnDelRollCallUpload();
+				btnDel.autosize();
+				btnDel.setText("刪除");
+				btnDel.setFileName(rs.getString("FileName"));
+				btnDel.setOnAction(new EventHandler<ActionEvent>() {
+			        public void handle(ActionEvent event) {
+			        	BtnDelRollCallUpload btnDel = (BtnDelRollCallUpload)event.getSource();
+			        	delUploadBatch(btnDel);
+			        }
+			    });
+				rcub.setBtnDelBatch(btnDel);
+				tvRollCallBatch.getItems().add(rcub);
+			}	
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);
+		} finally {
+			try {
+				rs.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+			try {
+				conn.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+		}		
+	}
+	
+	//刪除指定批次的所有資料	
+	public void delUploadBatch(BtnDelRollCallUpload btnDel) {
+		
+		/*
+		 * 跳出確認刪除的視窗
+		 * ★想要預設Button在否，但還試不出來
+		 */
+		Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+		alert.setHeaderText("點名批次刪除確認");
+		alert.setContentText("確認刪除此批次所有點名資料？");
+		Optional<ButtonType> buttonType = alert.showAndWait();
+		if (buttonType.get().getButtonData().equals(ButtonBar.ButtonData.OK_DONE)) {
+
+	    } else {
+			//點否的話，就不會刪除資料。
+			return;
+		}
+		
+		String sqlDelBatch = "delete from RollCallUploadBatch where FileName = ?";
+		String sqlDelDetail = "delete from RollCallUploadDetail where FileName = ?";
+
+		DBConnectionFactory dbf = new DBConnectionFactory();
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		try {		
+			conn = dbf.getSQLiteCon("", "Club.dll");
+			pstmt = conn.prepareStatement(sqlDelBatch);
+			pstmt.clearParameters();
+			pstmt.setString(1, btnDel.getFileName());
+			pstmt.executeUpdate();
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);
+		} 
+		
+		try {
+			pstmt = conn.prepareStatement(sqlDelDetail);
+			pstmt.clearParameters();
+			pstmt.setString(1, btnDel.getFileName());
+			pstmt.executeUpdate();			
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);
+		}
+		
+		try {
+			pstmt.close();
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);
+		}
+		try {
+			conn.close();
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);
+		}		
+		//重新查詢上傳批次資料
+		queryUploadBatch();
+	}
+	
 	/*
 	 * 將TSV檔案吃入
 	 */
@@ -164,7 +324,7 @@ public class RollCallUploadController extends Application {
 		//建立用來存TSV檔裡面內容的暫存變數
 		ArrayList<String> data = null; 
 		//建立之後要給點名資料ViewTable用的暫存變數
-		rollCallDetails = new TreeMap<String, RollCallDetail>();
+		rollCallDetails = new TreeMap<String, RollCallUploadDetail>();
 		//將檔案內容讀出
 		UTF8FileReader u8r = new UTF8FileReader();
 		//用來判斷第一筆(欄位標題)不吃的計算器
@@ -175,7 +335,7 @@ public class RollCallUploadController extends Application {
 		Integer errorCount = 0;
 		try {
 			data = u8r.replace(tfFilePath.getText().trim(), "\\s+", "|", true);
-			RollCallDetail rcd = null;
+			RollCallUploadDetail rcd = null;
 			//逐一整理
 			for (String s : data) {
 				rowCount++;
@@ -234,8 +394,8 @@ public class RollCallUploadController extends Application {
 	/*
 	 * 將 A000002|2020/9/24|上午|12:01:01 轉成 RollCallDetail 物件後回傳
 	 */
-	private RollCallDetail turnIntoRollCallDetail(String rawData) {
-		RollCallDetail rcd = new RollCallDetail();
+	private RollCallUploadDetail turnIntoRollCallDetail(String rawData) {
+		RollCallUploadDetail rcd = new RollCallUploadDetail();
 		String[] arrayData = rawData.split("\\|"); //像「|」這種特殊字元做為分隔符號，前面要加\\，split才辨認的出來
 		//第1個欄位的值的格式必須是 A + 6碼流水號，才處理
 		if (arrayData[0].substring(0, 1).equalsIgnoreCase("A") && arrayData[0].length() == 7) {
@@ -310,10 +470,8 @@ public class RollCallUploadController extends Application {
 		
 		//到這邊代表時間格式正確，將其組成 yyyy-mm-dd hh(24小時制):mm:ss
 		rcd.setRollCallTime(arrayData[1] + " " + arrayData[3]);
-		//先預設特色課程為N
+		//★(可能要刪)先預設特色課程為N
 		rcd.setSpecial("N");
-		//★特色課程要用下拉選單(之後再加)
-		//★操作要用下拉選單(之後再加)
 		//取得學員相關資料		
 		//ifnull用法：ifnull(Note,'') 當Note為null時，以空白取代
 		String sql = 
@@ -515,17 +673,25 @@ public class RollCallUploadController extends Application {
 		//取得TableView各列資料並寫入資料庫
 		String insertSystemTime = st.getNowTime("yyyyMMddHHmmssSSS");
 		String sqlInsertDetail = "insert into RollCallUploadDetail values(?, ?, ?, ?, ?, null)";
-		ObservableList<RollCallDetail> rcds = tvRollCallDetail.getItems();
-		for(RollCallDetail data : rcds) {
+		ObservableList<RollCallUploadDetail> rcds = tvRollCallDetail.getItems();
+		try {
+			conn = dbcf.getSQLiteCon("", "Club.dll");
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);				
+		}
+		
+		for(RollCallUploadDetail data : rcds) {
 			try {
-				conn = dbcf.getSQLiteCon("", "Club.dll");
-				pstmt = conn.prepareStatement(sqlInsertDetail);
-				pstmt.setString(1, backupFileName);
-				pstmt.setString(2, data.getStudentNo());
-				pstmt.setString(3, data.getRollCallTime());
-				pstmt.setString(4, data.getCbSpecial().getValue());
-				pstmt.setString(5, insertSystemTime);
-				pstmt.executeUpdate();				
+				//是否匯入=Y的才寫入資料庫
+				if (data.getCbImport().getValue().equalsIgnoreCase("Y")) {
+					pstmt = conn.prepareStatement(sqlInsertDetail);
+					pstmt.setString(1, backupFileName);
+					pstmt.setString(2, data.getStudentNo());
+					pstmt.setString(3, data.getRollCallTime());
+					pstmt.setString(4, data.getCbSpecial().getValue());
+					pstmt.setString(5, insertSystemTime);
+					pstmt.executeUpdate();
+				}
 			} catch (Exception e) {
 				logger.info(data.getStudentNo() + " " + data.getRollCallTime() + " 資料已存在!");
 				logger.info(e.getMessage(), e);
@@ -542,11 +708,14 @@ public class RollCallUploadController extends Application {
 			logger.info(e.getMessage(), e);				
 		}
 		
-		/*
-		 * ★寫到這邊，加一個button，可以查批次記錄
-		 * 寫入完成，要出訊息，並清TableView避免重複寫入，重新更新批次記錄
-		 * 加一個刪除批次的功能
-		 */
+		//★show訊息，寫入成功
+		
+		//清除表格
+		tvRollCallDetail.getItems().clear();
+		//清除暫存變數TreeMap
+		rollCallDetails.clear();
+		//★更新批次紀錄
+		
 	}
 	
 	@Override

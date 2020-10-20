@@ -15,13 +15,18 @@
          </font>
       </Label>
       <DatePicker fx:id="dpChoiceRollCallDate" layoutX="166.0" layoutY="16.0" prefHeight="23.0" prefWidth="123.0" />
+      <Button fx:id="btnQueryBatch" layoutX="299.0" layoutY="13.0" mnemonicParsing="false" onAction="#queryUploadBatch" prefHeight="23.0" prefWidth="123.0" text="查詢匯入紀錄">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Button>
       <Label layoutX="52.0" layoutY="54.0" text="選擇點名檔">
          <font>
             <Font name="System Bold" size="16.0" />
          </font>
       </Label>
       <TextField fx:id="tfFilePath" layoutX="166.0" layoutY="50.0" prefHeight="29.0" prefWidth="447.0" />
-      <Button fx:id="btnChoiceRollCallFile" layoutX="624.0" layoutY="50.0" mnemonicParsing="false" onAction="#choiceFile" prefHeight="29.0" prefWidth="56.0" text="選擇">
+      <Button fx:id="btnChoiceRollCallFile" layoutX="623.0" layoutY="50.0" mnemonicParsing="false" onAction="#choiceFile" prefHeight="29.0" prefWidth="58.0" text="選擇">
          <font>
             <Font size="14.0" />
          </font>
@@ -54,10 +59,11 @@
             <Font size="14.0" />
          </font>
       </Button>
-      <TableView layoutX="820.0" layoutY="10.0" prefHeight="193.0" prefWidth="339.0">
+      <TableView fx:id="tvRollCallBatch" layoutX="820.0" layoutY="10.0" prefHeight="193.0" prefWidth="339.0">
         <columns>
-          <TableColumn prefWidth="113.0" text="點名日期" />
-          <TableColumn prefWidth="225.0" text="檔案匯入時間" />
+          <TableColumn fx:id="colBatchRollCallDate" prefWidth="100.0" text="點名日期" />
+          <TableColumn fx:id="colBatchRollCreateTime" prefWidth="164.0" text="檔案匯入時間" />
+            <TableColumn fx:id="colBatchDel" prefWidth="74.0" text="刪除" />
         </columns>
       </TableView>
       <TableView layoutX="820.0" layoutY="222.0" prefHeight="442.0" prefWidth="339.0">

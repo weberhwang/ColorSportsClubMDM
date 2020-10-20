@@ -9,7 +9,7 @@ package com.wj.clubmdm.vo;
 import com.wj.clubmdm.component.ChoiceBoxImport;
 import com.wj.clubmdm.component.ChoiceBoxSpecial;
 
-public class RollCallDetail {
+public class RollCallUploadDetail {
 	private String seqNo; //序號
 	private String studentNo; //學員編號
 	private String name; //姓名
