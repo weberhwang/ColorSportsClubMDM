@@ -1,5 +1,4 @@
 /* 
-
  * Colors Sports Club 點名資料上傳 Controller
  * 
  * @author 黃郁授,吳彥儒
@@ -33,6 +32,7 @@ import org.apache.log4j.Logger;
 import com.wj.clubmdm.component.BtnDelRollCallUpload;
 import com.wj.clubmdm.component.ChoiceBoxImport;
 import com.wj.clubmdm.component.ChoiceBoxSpecial;
+import com.wj.clubmdm.vo.Message;
 import com.wj.clubmdm.vo.RollCallUploadBatch;
 import com.wj.clubmdm.vo.RollCallUploadDetail;
 
@@ -112,6 +112,12 @@ public class RollCallUploadController extends Application {
 	private TableColumn<RollCallUploadBatch, String> colBatchRollCreateTime; //點名批次_匯入時間
 	@FXML
 	private TableColumn<RollCallUploadBatch, BtnDelRollCallUpload> colBatchDel; //點名批次_刪除
+	@FXML
+	private TableView<Message> tvMsg; //訊息TableView
+	@FXML
+	private TableColumn<Message, String> colMsgTime; //訊息時間
+	@FXML
+	private TableColumn<Message, String> colMsgContent; //訊息內容
 	
 	/*
 	 * 初始化
@@ -132,7 +138,11 @@ public class RollCallUploadController extends Application {
 		//建立上傳批次TableView資料連結
 		colBatchRollCallDate.setCellValueFactory(new PropertyValueFactory<>("rollCallDate"));
 		colBatchRollCreateTime.setCellValueFactory(new PropertyValueFactory<>("createTime"));
-		colBatchDel.setCellValueFactory(new PropertyValueFactory<>("btnDelBatch"));		
+		colBatchDel.setCellValueFactory(new PropertyValueFactory<>("btnDelBatch"));
+		
+		//建立訊息TableView資料連結
+		colMsgTime.setCellValueFactory(new PropertyValueFactory<>("msgTime"));
+		colMsgContent.setCellValueFactory(new PropertyValueFactory<>("msgContent"));
 		
 		//設定日期選擇器的格式
 		StringConverter<LocalDate> converter = new StringConverter<LocalDate>() {
@@ -156,6 +166,24 @@ public class RollCallUploadController extends Application {
 		dpChoiceRollCallDate.setConverter(converter);		
 	}
 
+	/*
+	 * tvMsg.getItems().clear(); 
+	 * 用來寫入訊息至TableView
+	 * @param msgContent 訊息內容
+	 */
+	public void insertMsg(String msgContent) {
+		// 避免訊息寫入過快，造成TableView因鍵值Dup問題，秀不出資料
+		try {
+			Thread.currentThread();
+			Thread.sleep(10);
+		} catch (InterruptedException e) {
+			logger.info(e.getMessage(), e);
+		}
+		Message msg = new Message();
+		msg.setMsgContent(msgContent);		
+		tvMsg.getItems().add(msg);
+	}
+	
 	/*
 	 * 查詢點名檔上傳批次
 	 */
@@ -254,7 +282,7 @@ public class RollCallUploadController extends Application {
 		if (buttonType.get().getButtonData().equals(ButtonBar.ButtonData.OK_DONE)) {
 
 	    } else {
-			//點否的話，就不會刪除資料。
+			//點「否」的話，就不會刪除資料。
 			return;
 		}
 		
@@ -301,20 +329,18 @@ public class RollCallUploadController extends Application {
 	 * 將TSV檔案吃入
 	 */
 	public void checkRollCallFile() {
-		
+		//清除訊息
+		tvMsg.getItems().clear(); 
 		chkField(); //檢核欄位值
 		//檢核Excel檔案是否存在
 		File file = new File(tfFilePath.getText().trim());
 
-		//提示錯誤的對話框
-		Alert alert = new Alert(Alert.AlertType.ERROR);
+		//提示檔案不存在
 		if (!file.exists()) {
-			alert.setHeaderText("資料輸入有誤");
-			alert.setContentText("點名檔不存在，請確認檔案路徑！");
-			alert.showAndWait();
-			return;		
+			insertMsg("點名檔不存在，請確認檔案路徑！");
+			return;
 		}
-		
+				
 		//把讀檔來源的絕對路徑先暫存
 		fromPath = tfFilePath.getText().trim(); 
 		
@@ -351,8 +377,7 @@ public class RollCallUploadController extends Application {
 						//先確認資料是否有重覆
 						if (rollCallDetails.containsKey(rcd.getRollCallTime() + rcd.getStudentNo())) {
 							errorCount++;
-							logger.info(s + " 資料重覆，自動排除(只保留1筆)。");
-							//logger.info(rcd.getRollCallTime() + " " + rcd.getStudentNo() + " 點名資料重覆，自動排除(只保留1筆)。");
+							insertMsg(s + " 資料重覆，自動排除(只保留1筆)。");
 						} else {
 							seqNo++;
 							rcd.setSeqNo(seqNo.toString());
@@ -364,9 +389,9 @@ public class RollCallUploadController extends Application {
 				}
 			}
 		} catch (Exception e) {
-			alert.setHeaderText("點名檔內容格式有誤！");
-			alert.setContentText("請確認點名檔內文！");
-			alert.showAndWait();
+			tvMsg.getItems().clear(); 
+			insertMsg("點名檔內容格式有誤，請確認點名檔內容，修正後，");
+			insertMsg("重新「選擇」>「檢查檔案資料」");
 			logger.info(e.getMessage(), e);
 			return;		
 		}
@@ -374,9 +399,9 @@ public class RollCallUploadController extends Application {
 		showRollCallDetail();
 		// 若有問題筆數>0，則提醒
 		if (errorCount > 0) {
-			alert.setHeaderText("提醒");
-			alert.setContentText("共 " + errorCount.toString() + " 筆 寫入暫存表格失敗，請確認點名檔內文，修正後，重新執行「檢查檔案資料」！");
-			alert.showAndWait();			
+			insertMsg("");
+			insertMsg("共 " + errorCount.toString() + " 筆 讀取失敗，請修正點名檔內文後，");		
+			insertMsg("重新執行「檢查檔案資料」再執行「將下方表格內容匯入資料庫」。");		
 		}
 	}
 
@@ -401,7 +426,7 @@ public class RollCallUploadController extends Application {
 		if (arrayData[0].substring(0, 1).equalsIgnoreCase("A") && arrayData[0].length() == 7) {
 			rcd.setStudentNo(arrayData[0]);
 		} else {
-			logger.info(rawData + " 學員編號格式不正確");
+			insertMsg(rawData + " 學員編號格式不正確");
 			return null;
 		}
 		
@@ -410,7 +435,7 @@ public class RollCallUploadController extends Application {
 		
 		//年份欄位若不是4碼代表資料有問題
 		if (tempDate[0].length() != 4) {
-			logger.info(rawData + " 年份不正確");
+			insertMsg(rawData + " 年份不正確");
 			return null;
 		}
 		
@@ -428,7 +453,7 @@ public class RollCallUploadController extends Application {
 		//第3個欄位欄位必須是 上午 or 下午 這兩個字樣
 		if (arrayData[2].equalsIgnoreCase("上午") || arrayData[2].equalsIgnoreCase("下午")) {		
 		} else {
-			logger.info(rawData + " 點名時間格式有誤，缺少上午、下午字樣");
+			insertMsg(rawData + " 點名時間格式有誤，缺少上午、下午字樣");
 			return null;			
 		}
 				
@@ -441,7 +466,14 @@ public class RollCallUploadController extends Application {
 			Integer hour = Integer.parseInt(tempTime[0]);
 			try {
 				if (hour >= 13 || hour == 0) {
-					logger.info(rawData + " 點名時間格式有誤 上午為12:00-11:59 下午為12:00-11:59");
+					insertMsg("");
+					insertMsg(rawData + " 點名時間格式有誤 時間須介於12:00-11:59");
+					insertMsg("補充說明：");
+					insertMsg("(1)上午 12:01 為 24小時制的 00:01");
+					insertMsg("(2)上午 11:59 為 24小時制的 11:59");
+					insertMsg("(3)下午 12:01 為 24小時制的 12:01");
+					insertMsg("(4)下午 11:59 為 24小時制的 23:59");
+					insertMsg("");
 					return null;
 				}
 	
@@ -456,15 +488,15 @@ public class RollCallUploadController extends Application {
 					tempTime[0] = hour.toString();					
 				}
 				arrayData[3] = tempTime[0] + ":" + tempTime[1] + ":" + tempTime[2];
-			} catch(Exception e) {
-				logger.info(rawData + " 點名時間格式有誤 ");
+			} catch (Exception e) {
+				insertMsg(rawData + " 點名時間格式有誤 ");
 				return null;				
 			}
 		}
 		
 		//若資料的點名日期與上方選擇的匯入日不符合時，則不列入TableView中
 		if (!arrayData[1].equalsIgnoreCase(dpChoiceRollCallDate.getValue().toString())) {
-			logger.info(rawData + " 點名日期 與 選擇的「點名日期」不一致，此筆資料已被忽略。");
+			insertMsg(rawData + "資料 點名日期 不符，已忽略。");
 			return null;
 		}
 		
@@ -519,14 +551,6 @@ public class RollCallUploadController extends Application {
 				cbSpecial.setRollCallTime(rcd.getRollCallTime());
 				cbSpecial.setStudentNo(rcd.getStudentNo());
 				cbSpecial.getSelectionModel().select("N"); //把N當成預設值
-				/*
-				cbSpecial.setOnAction(new EventHandler<ActionEvent>() {
-			        public void handle(ActionEvent event) {
-			        	ChoiceBoxSpecial cbSpecial = (ChoiceBoxSpecial)event.getSource();
-			        	//★加一個method處理改成N這件事
-			        }
-			    });
-			    */	
 
 				//建立是否匯入的下拉選單(預設y)
 				cbImport = new ChoiceBoxImport();
@@ -535,14 +559,6 @@ public class RollCallUploadController extends Application {
 				cbImport.setRollCallTime(rcd.getRollCallTime());
 				cbImport.setStudentNo(rcd.getStudentNo());
 				cbImport.getSelectionModel().select("Y"); //把N當成預設值
-				/*
-				cbImport.setOnAction(new EventHandler<ActionEvent>() {
-			        public void handle(ActionEvent event) {
-			        	ChoiceBoxImport cbSpecial = (ChoiceBoxImport)event.getSource();
-			        	//★加一個method處理改成N這件事
-			        }
-			    });
-			    */	
 				
 				rcd.setCbSpecial(cbSpecial); //把特色課程的下拉選單加給RollCallDetail物件，當作屬性
 				rcd.setCbImport(cbImport); //把匯入的下拉選單加給RollCallDetail物件，當作屬性
@@ -582,15 +598,11 @@ public class RollCallUploadController extends Application {
 	/*
 	 * 檢查輸入欄位
 	 */
-	private boolean chkField() {
-		//提示錯誤的對話框
-		Alert alert = new Alert(Alert.AlertType.ERROR);
-		alert.setHeaderText("資料輸入有誤");
-				
+	private boolean chkField() {				
 		//檢核日期是否正確
-		if (dpChoiceRollCallDate.getValue() == null) {			
-			alert.setContentText("點名日期不正確！");
-			alert.showAndWait();
+		if (dpChoiceRollCallDate.getValue() == null) {		
+			tvMsg.getItems().clear(); 
+			insertMsg("「點名日期」輸入有誤！");
 			return false;			
 		}
 		return true;
@@ -624,7 +636,8 @@ public class RollCallUploadController extends Application {
 	public void readTableView() {
 		//判斷TableView的筆數，若=0，則代表要重新再檢查資料
 		if (tvRollCallDetail.getItems().size() <= 0) {
-			logger.info("表格中無資料，請重新執行「檢查檔案資料」！");
+			tvMsg.getItems().clear(); 
+			insertMsg("表格中無資料，請重新執行「檢查檔案資料」！");
 			return;
 		}
 		
@@ -639,7 +652,8 @@ public class RollCallUploadController extends Application {
 	    	Path inputPath = new File(fromPath).toPath();
 	    	Files.copy(inputPath, fos);
 	    } catch(Exception e) {
-	    	logger.info("檔案備份失敗，請洽系統開發人員！");
+	    	tvMsg.getItems().clear(); 
+	    	insertMsg("檔案備份失敗，請洽系統開發人員！");
 	    	logger.info(e.getMessage(), e);
 	    }
 	    
@@ -693,7 +707,7 @@ public class RollCallUploadController extends Application {
 					pstmt.executeUpdate();
 				}
 			} catch (Exception e) {
-				logger.info(data.getStudentNo() + " " + data.getRollCallTime() + " 資料已存在!");
+				insertMsg(data.getStudentNo() + " " + data.getRollCallTime() + " 已存在資料庫!");
 				logger.info(e.getMessage(), e);
 			} 	
 		}
@@ -708,13 +722,12 @@ public class RollCallUploadController extends Application {
 			logger.info(e.getMessage(), e);				
 		}
 		
-		//★show訊息，寫入成功
-		
+		//秀訊息寫入成功
+		insertMsg("點名資料 寫入 資料庫成功!");
 		//清除表格
 		tvRollCallDetail.getItems().clear();
 		//清除暫存變數TreeMap
 		rollCallDetails.clear();
-		//★更新批次紀錄
 		
 	}
 	
