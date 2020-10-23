@@ -74,8 +74,6 @@ public class RollCallUploadController extends Application {
 	@FXML
 	private DatePicker dpChoiceRollCallDate; //選擇點名日期
 	@FXML
-	private Button btnQueryBatch; //查詢上傳批次紀錄
-	@FXML
 	private TextField tfFilePath; //點名檔絕對路徑
 	@FXML
 	private Button btnChoiceRollCallFile; //選擇點名檔
@@ -143,6 +141,9 @@ public class RollCallUploadController extends Application {
 		//建立訊息TableView資料連結
 		colMsgTime.setCellValueFactory(new PropertyValueFactory<>("msgTime"));
 		colMsgContent.setCellValueFactory(new PropertyValueFactory<>("msgContent"));
+		
+		//查詢匯入批次紀錄
+		queryUploadBatch();
 		
 		//設定日期選擇器的格式
 		StringConverter<LocalDate> converter = new StringConverter<LocalDate>() {
