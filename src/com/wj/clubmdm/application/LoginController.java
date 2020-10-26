@@ -46,6 +46,8 @@ public class LoginController extends Application {
 	@FXML
 	private Button btnForgetPWD; //忘記密碼Button
 	@FXML
+	private Button btnRegister; //註冊
+	@FXML
 	private Label labelMsg; //訊息
 	
 	/*
@@ -82,7 +84,11 @@ public class LoginController extends Application {
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
 			while (rs.next()) {
-				snPlainTexts.add(aesTool.decrypt(rs.getString("SerialNumber"),aesTool.getKey()));
+				try {
+					snPlainTexts.add(aesTool.decrypt(rs.getString("SerialNumber"),aesTool.getKey()));
+				} catch (Exception e) {
+					logger.info("SerialNumber欄位之資料長度須為16的倍數。");					
+				}
 			}
 		} catch (Exception e) {
 			logger.info(e.getMessage(), e);
@@ -120,9 +126,32 @@ public class LoginController extends Application {
 			}
 		}
 		
-		labelMsg.setText("此電腦非合法註冊者，無法使用本軟體！");
+		labelMsg.setText("此電腦非合法註冊者，無法使用本軟體，請註冊！");
 		return false;
 	}
+	
+	/*
+	 * 進入註冊頁面
+	 */
+	public void register() {
+		primaryStage = (Stage) btnForgetPWD.getScene().getWindow();
+		FXMLLoader loader = null;
+		AnchorPane root = null;
+		Scene scene = null;
+		try {
+			loader = new FXMLLoader(getClass().getResource("Register.fxml"));			
+			root = (AnchorPane)loader.load();
+			scene = new Scene(root, 1210, 710);
+			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+			primaryStage.setTitle("COLOR SPORTS CLUB MDM_V1.0");
+			primaryStage.setScene(scene);
+			primaryStage.setResizable(false); //不可改變視窗大小
+			primaryStage.show();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}			
+	}
+	
 	
 	/*
 	 * 檢查帳號密碼
@@ -131,7 +160,7 @@ public class LoginController extends Application {
 		boolean chklogin = false; //預設登入失敗
 		
 		if (!chkMotherBoardSN()) {			
-			labelMsg.setText("此電腦非合法註冊者，無法使用本軟體！");
+			labelMsg.setText("此電腦非合法註冊者，無法使用本軟體，請註冊！");
 			return;
 		}
 		
@@ -262,7 +291,7 @@ public class LoginController extends Application {
 		try {
 			loader = new FXMLLoader(getClass().getResource("ChangePWD.fxml"));			
 			root = (AnchorPane)loader.load();
-			scene = new Scene(root, 1200, 700);
+			scene = new Scene(root, 1210, 710);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 		    ChangePWDController controller = loader.getController();
 	        controller.setQuestion(question);

@@ -21,12 +21,12 @@
          </font>
       </Label>
       <TextField fx:id="tfFilePath" layoutX="166.0" layoutY="50.0" prefHeight="29.0" prefWidth="447.0" />
-      <Button fx:id="btnChoiceRollCallFile" layoutX="624.0" layoutY="50.0" mnemonicParsing="false" onAction="#choiceFile" prefHeight="29.0" prefWidth="56.0" text="選擇">
+      <Button fx:id="btnChoiceRollCallFile" layoutX="623.0" layoutY="50.0" mnemonicParsing="false" onAction="#choiceFile" prefHeight="29.0" prefWidth="58.0" text="選擇">
          <font>
             <Font size="14.0" />
          </font>
       </Button>
-      <Button fx:id="btnCheckData" layoutX="690.0" layoutY="50.0" mnemonicParsing="false" onAction="#checkRollCallFile" prefHeight="29.0" prefWidth="107.0" text="檢查檔案資料">
+      <Button fx:id="btnCheckData" layoutX="691.0" layoutY="50.0" mnemonicParsing="false" onAction="#checkRollCallFile" prefHeight="29.0" prefWidth="107.0" text="檢查檔案資料">
          <font>
             <Font size="14.0" />
          </font>
@@ -36,34 +36,35 @@
             <Font name="System Bold" size="16.0" />
          </font>
       </Label>
-      <TableView layoutX="52.0" layoutY="128.0" prefHeight="536.0" prefWidth="745.0">
+      <TableView fx:id="tvRollCallDetail" layoutX="52.0" layoutY="128.0" prefHeight="536.0" prefWidth="557.0">
          <columns>
-            <TableColumn prefWidth="45.0" text="序號" />
-            <TableColumn prefWidth="75.0" text="學員編號" />
-            <TableColumn prefWidth="86.0" text="姓名" />
-            <TableColumn prefWidth="72.0" text="上課分部" />
-            <TableColumn prefWidth="61.0" text="類別" />
-            <TableColumn prefWidth="68.0" text="程度" />
-            <TableColumn prefWidth="136.0" text="點名時間" />
-            <TableColumn prefWidth="66.0" text="特色課程" />
-            <TableColumn prefWidth="135.0" text="操作" />
+            <TableColumn fx:id="colSeqNo" prefWidth="34.0" text="序號" />
+            <TableColumn fx:id="colStudentNo" prefWidth="60.0" text="學員編號" />
+            <TableColumn fx:id="colName" prefWidth="79.0" text="姓名" />
+            <TableColumn fx:id="colDepartment" prefWidth="58.0" text="上課分部" />
+            <TableColumn fx:id="colCourseKind" prefWidth="38.0" text="類別" />
+            <TableColumn fx:id="colLevel" prefWidth="37.0" text="程度" />
+            <TableColumn fx:id="colRollCallDate" prefWidth="134.0" text="點名時間" />
+            <TableColumn fx:id="colRollSpecial" prefWidth="56.0" text="特色課程" />
+            <TableColumn fx:id="colRollImport" prefWidth="61.0" text="是否匯入" />
          </columns>
       </TableView>
-      <Button layoutX="166.0" layoutY="88.0" mnemonicParsing="false" prefHeight="23.0" prefWidth="129.0" text="確認匯入點名檔">
+      <Button fx:id="btnImport" layoutX="166.0" layoutY="88.0" mnemonicParsing="false" onAction="#readTableView" prefHeight="29.0" prefWidth="190.0" text="將下方表格內容匯入資料庫">
          <font>
             <Font size="14.0" />
          </font>
       </Button>
-      <TableView layoutX="820.0" layoutY="10.0" prefHeight="193.0" prefWidth="339.0">
+      <TableView fx:id="tvRollCallBatch" layoutX="620.0" layoutY="128.0" prefHeight="195.0" prefWidth="532.0">
         <columns>
-          <TableColumn prefWidth="113.0" text="點名日期" />
-          <TableColumn prefWidth="225.0" text="檔案匯入時間" />
+          <TableColumn fx:id="colBatchRollCallDate" prefWidth="147.0" text="點名日期" />
+          <TableColumn fx:id="colBatchRollCreateTime" prefWidth="335.0" text="檔案匯入時間" />
+            <TableColumn fx:id="colBatchDel" prefWidth="49.0" text="刪除" />
         </columns>
       </TableView>
-      <TableView layoutX="820.0" layoutY="222.0" prefHeight="442.0" prefWidth="339.0">
+      <TableView fx:id="tvMsg" layoutX="620.0" layoutY="333.0" prefHeight="331.0" prefWidth="532.0">
          <columns>
-            <TableColumn prefWidth="133.0" text="訊息時間" />
-            <TableColumn prefWidth="205.0" text="訊息內容" />
+            <TableColumn fx:id="colMsgTime" prefWidth="148.0" text="訊息時間" />
+            <TableColumn fx:id="colMsgContent" prefWidth="383.0" text="訊息內容" />
          </columns>
       </TableView>
    </children>
