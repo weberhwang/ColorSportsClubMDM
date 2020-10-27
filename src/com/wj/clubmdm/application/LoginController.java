@@ -220,7 +220,7 @@ public class LoginController extends Application {
 			Scene scene = null;
 			try {
 				root = (AnchorPane) FXMLLoader.load(getClass().getResource("PageRoot.fxml"));
-				scene = new Scene(root, 1210, 710);
+				scene = new Scene(root, 1200, 730);
 				scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 				primaryStage.setTitle("COLOR SPORTS CLUB MDM_V1.0");
 				primaryStage.setScene(scene);
