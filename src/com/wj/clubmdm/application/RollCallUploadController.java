@@ -109,6 +109,8 @@ public class RollCallUploadController extends Application {
 	@FXML
 	private TableColumn<RollCallUploadBatch, String> colBatchRollCreateTime; //點名批次_匯入時間
 	@FXML
+	private TableColumn<RollCallUploadBatch, String> colBatchRollFileName; //點名批次_檔名	
+	@FXML
 	private TableColumn<RollCallUploadBatch, BtnDelRollCallUpload> colBatchDel; //點名批次_刪除
 	@FXML
 	private TableView<Message> tvMsg; //訊息TableView
@@ -136,6 +138,7 @@ public class RollCallUploadController extends Application {
 		//建立上傳批次TableView資料連結
 		colBatchRollCallDate.setCellValueFactory(new PropertyValueFactory<>("rollCallDate"));
 		colBatchRollCreateTime.setCellValueFactory(new PropertyValueFactory<>("createTime"));
+		colBatchRollFileName.setCellValueFactory(new PropertyValueFactory<>("fileName"));
 		colBatchDel.setCellValueFactory(new PropertyValueFactory<>("btnDelBatch"));
 		
 		//建立訊息TableView資料連結
@@ -192,9 +195,9 @@ public class RollCallUploadController extends Application {
 		tvRollCallBatch.getItems().clear(); //清除點名批次TableView
 		String sql = 
 				"SELECT " +
-			    "   FileName," +
-		        "   RollCallDate," +
-				"	CreateTime " + 
+			    "  FileName," +
+		        "  RollCallDate," +
+				"  CreateTime " + 
 				"FROM " + 
 				"  RollCallUploadBatch " + 
 				"ORDER BY CreateTime DESC";
@@ -327,6 +330,49 @@ public class RollCallUploadController extends Application {
 	}
 	
 	/*
+	 * 檢查RollCallUploadBatch中有幾筆該點名日期的批次
+	 * param yyyymmdd 點名日期(西元年月日)
+	 * return 筆數
+	 */
+	private Integer checkRollCallUploadBatch(String yyyymmdd) {
+		String sql = "SELECT count(*) cnt from RollCallUploadBatch where RollCallDate = ?";
+		DBConnectionFactory dbf = new DBConnectionFactory();
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		Integer count = 0; //用來記錄RollCallUploadBatch Table中有幾筆該點名日的批次
+		try {	
+			conn = dbf.getSQLiteCon("", "Club.dll");
+			pstmt = conn.prepareStatement(sql);
+			pstmt.clearParameters();
+			pstmt.setString(1, yyyymmdd);
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				count = rs.getInt("cnt");
+			}
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);
+		} finally {
+			try {
+				rs.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+			try {
+				conn.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+		}	
+		return count;
+	}
+	
+	/*
 	 * 將TSV檔案吃入
 	 */
 	public void checkRollCallFile() {
@@ -346,7 +392,14 @@ public class RollCallUploadController extends Application {
 		fromPath = tfFilePath.getText().trim(); 
 		
 		//暫存所選擇的日期，轉成yyyyMMdd這個格式
-		rollCallDate = dpChoiceRollCallDate.getValue().toString().replace("-", "");		
+		rollCallDate = dpChoiceRollCallDate.getValue().toString().replace("-", "");	
+		
+		//檢核RollCallUploadBatch裡面是否已有該點名日期上傳的記錄，若有的話，不允許上去
+		if (checkRollCallUploadBatch(rollCallDate) > 0) {
+			insertMsg("該日已有上傳過點名檔，");
+			insertMsg("如要重新上傳，請先刪除該批點名資料！");
+			return;
+		}
 		
 		//建立用來存TSV檔裡面內容的暫存變數
 		ArrayList<String> data = null; 
@@ -497,7 +550,7 @@ public class RollCallUploadController extends Application {
 		
 		//若資料的點名日期與上方選擇的匯入日不符合時，則不列入TableView中
 		if (!arrayData[1].equalsIgnoreCase(dpChoiceRollCallDate.getValue().toString())) {
-			insertMsg(rawData + "資料 點名日期 不符，已忽略。");
+			insertMsg(rawData + " 資料 點名日期 不符，已忽略。");
 			return null;
 		}
 		
@@ -509,11 +562,11 @@ public class RollCallUploadController extends Application {
 		//ifnull用法：ifnull(Note,'') 當Note為null時，以空白取代
 		String sql = 
 				"SELECT " +
-		        "   f.StudentNo," +
-				"	f.Name," + 
-				"	(select d.desc from Student s left join CodeDetail d on s.Department = d.DetailCode and d.MainCode = '004') DepartmentDesc," + 
-				"	(select d.desc from Student s left join CodeDetail d on s.CourseKind = d.DetailCode and d.MainCode = '005') CourseKindDesc," + 
-				"	(select d.desc from Student s left join CodeDetail d on s.Level = d.DetailCode and d.MainCode = '002') LevelDesc " +				
+		        "  f.StudentNo," +
+				"  f.Name," + 
+				"  (select d.desc from Student s left join CodeDetail d on s.Department = d.DetailCode and d.MainCode = '004') DepartmentDesc," + 
+				"  (select d.desc from Student s left join CodeDetail d on s.CourseKind = d.DetailCode and d.MainCode = '005') CourseKindDesc," + 
+				"  (select d.desc from Student s left join CodeDetail d on s.Level = d.DetailCode and d.MainCode = '002') LevelDesc " +				
 				"FROM " + 
 				"  Student f " + 
 				"WHERE " + 
@@ -566,13 +619,8 @@ public class RollCallUploadController extends Application {
 			}
 			//若沒有找到資料時
 			if (count <= 0) {
-				rcd.setStudentNo(rs.getString("無學員資料"));
-				rcd.setName(rs.getString(""));
-				rcd.setDepartment(rs.getString(""));
-				rcd.setCourseKind(rs.getString(""));
-				rcd.setLevel(rs.getString(""));				
-				rcd.setCbSpecial(cbSpecial); //把特色課程的下拉選單加給RollCallDetail物件，當作屬性
-				rcd.setCbImport(cbImport); //把匯入的下拉選單加給RollCallDetail物件，當作屬性
+				insertMsg(rawData + " 查無該學員資料，請先建立學員資料再重新匯入！");
+				return null;
 			}
 		} catch (Exception e) {
 			logger.info(e.getMessage(), e);
@@ -729,6 +777,8 @@ public class RollCallUploadController extends Application {
 		tvRollCallDetail.getItems().clear();
 		//清除暫存變數TreeMap
 		rollCallDetails.clear();
+		//寫入後，重新秀批次匯入歷程
+		queryUploadBatch();
 		
 	}
 	

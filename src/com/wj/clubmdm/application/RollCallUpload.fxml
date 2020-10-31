@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.wj.clubmdm.application.RollCallUploadController">
+<AnchorPane prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.wj.clubmdm.application.RollCallUploadController">
    <children>
       <Label layoutX="52.0" layoutY="17.0" text="點名日期">
          <font>
@@ -54,17 +54,18 @@
             <Font size="14.0" />
          </font>
       </Button>
-      <TableView fx:id="tvRollCallBatch" layoutX="620.0" layoutY="128.0" prefHeight="195.0" prefWidth="532.0">
+      <TableView fx:id="tvRollCallBatch" layoutX="620.0" layoutY="128.0" prefHeight="195.0" prefWidth="538.0">
         <columns>
-          <TableColumn fx:id="colBatchRollCallDate" prefWidth="147.0" text="點名日期" />
-          <TableColumn fx:id="colBatchRollCreateTime" prefWidth="335.0" text="檔案匯入時間" />
-            <TableColumn fx:id="colBatchDel" prefWidth="49.0" text="刪除" />
+            <TableColumn fx:id="colBatchDel" prefWidth="64.0" text="刪除" />
+          <TableColumn fx:id="colBatchRollCallDate" prefWidth="83.0" text="點名日期" />
+          <TableColumn fx:id="colBatchRollCreateTime" prefWidth="129.0" text="檔案匯入時間" />
+            <TableColumn fx:id="colBatchRollFileName" prefWidth="317.0" text="備份檔名" />
         </columns>
       </TableView>
-      <TableView fx:id="tvMsg" layoutX="620.0" layoutY="333.0" prefHeight="331.0" prefWidth="532.0">
+      <TableView fx:id="tvMsg" layoutX="620.0" layoutY="333.0" prefHeight="331.0" prefWidth="538.0">
          <columns>
             <TableColumn fx:id="colMsgTime" prefWidth="148.0" text="訊息時間" />
-            <TableColumn fx:id="colMsgContent" prefWidth="383.0" text="訊息內容" />
+            <TableColumn fx:id="colMsgContent" prefWidth="629.0" text="訊息內容" />
          </columns>
       </TableView>
    </children>

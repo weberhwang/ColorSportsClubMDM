@@ -20,7 +20,7 @@ public class Login extends Application {
 	public void start(Stage primaryStage) {
 		try {
 			AnchorPane root = (AnchorPane)FXMLLoader.load(getClass().getResource("Login.fxml"));
-			Scene scene = new Scene(root,1200,700);
+			Scene scene = new Scene(root,1200,720);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setTitle("COLOR SPORTS CLUB MDM_V1.0");
 			primaryStage.setScene(scene);
