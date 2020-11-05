@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.wj.clubmdm.application.RollCallUploadController">
+<AnchorPane prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.wj.clubmdm.application.RollCallUploadController">
    <children>
       <Label layoutX="52.0" layoutY="17.0" text="點名日期">
          <font>
@@ -36,17 +36,17 @@
             <Font name="System Bold" size="16.0" />
          </font>
       </Label>
-      <TableView fx:id="tvRollCallDetail" layoutX="52.0" layoutY="128.0" prefHeight="536.0" prefWidth="557.0">
+      <TableView fx:id="tvRollCallDetail" layoutX="52.0" layoutY="128.0" prefHeight="308.0" prefWidth="1106.0">
          <columns>
-            <TableColumn fx:id="colSeqNo" prefWidth="34.0" text="序號" />
-            <TableColumn fx:id="colStudentNo" prefWidth="60.0" text="學員編號" />
-            <TableColumn fx:id="colName" prefWidth="79.0" text="姓名" />
-            <TableColumn fx:id="colDepartment" prefWidth="58.0" text="上課分部" />
-            <TableColumn fx:id="colCourseKind" prefWidth="38.0" text="類別" />
-            <TableColumn fx:id="colLevel" prefWidth="37.0" text="程度" />
-            <TableColumn fx:id="colRollCallDate" prefWidth="134.0" text="點名時間" />
-            <TableColumn fx:id="colRollSpecial" prefWidth="56.0" text="特色課程" />
-            <TableColumn fx:id="colRollImport" prefWidth="61.0" text="是否匯入" />
+            <TableColumn fx:id="colSeqNo" text="序號" />
+            <TableColumn fx:id="colStudentNo" prefWidth="111.0" text="學員編號" />
+            <TableColumn fx:id="colName" prefWidth="154.0" text="姓名" />
+            <TableColumn fx:id="colDepartment" prefWidth="129.0" text="上課分部" />
+            <TableColumn fx:id="colCourseKind" prefWidth="111.0" text="類別" />
+            <TableColumn fx:id="colLevel" minWidth="9.0" prefWidth="112.0" text="程度" />
+            <TableColumn fx:id="colRollCallDate" prefWidth="156.0" text="點名時間" />
+            <TableColumn fx:id="colRollSpecial" prefWidth="147.0" text="特色課程" />
+            <TableColumn fx:id="colRollImport" prefWidth="105.0" text="是否匯入" />
          </columns>
       </TableView>
       <Button fx:id="btnImport" layoutX="166.0" layoutY="88.0" mnemonicParsing="false" onAction="#readTableView" prefHeight="29.0" prefWidth="190.0" text="將下方表格內容匯入資料庫">
@@ -54,7 +54,7 @@
             <Font size="14.0" />
          </font>
       </Button>
-      <TableView fx:id="tvRollCallBatch" layoutX="620.0" layoutY="128.0" prefHeight="195.0" prefWidth="538.0">
+      <TableView fx:id="tvRollCallBatch" layoutX="52.0" layoutY="448.0" prefHeight="216.0" prefWidth="557.0">
         <columns>
             <TableColumn fx:id="colBatchDel" prefWidth="64.0" text="刪除" />
           <TableColumn fx:id="colBatchRollCallDate" prefWidth="83.0" text="點名日期" />
@@ -62,7 +62,7 @@
             <TableColumn fx:id="colBatchRollFileName" prefWidth="317.0" text="備份檔名" />
         </columns>
       </TableView>
-      <TableView fx:id="tvMsg" layoutX="620.0" layoutY="333.0" prefHeight="331.0" prefWidth="538.0">
+      <TableView fx:id="tvMsg" layoutX="620.0" layoutY="448.0" prefHeight="216.0" prefWidth="538.0">
          <columns>
             <TableColumn fx:id="colMsgTime" prefWidth="148.0" text="訊息時間" />
             <TableColumn fx:id="colMsgContent" prefWidth="629.0" text="訊息內容" />

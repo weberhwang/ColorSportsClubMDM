@@ -127,9 +127,9 @@ public class RollCallUploadController extends Application {
 		colSeqNo.setCellValueFactory(new PropertyValueFactory<>("seqNo"));
 		colStudentNo.setCellValueFactory(new PropertyValueFactory<>("studentNo"));
 		colName.setCellValueFactory(new PropertyValueFactory<>("name"));
-		colDepartment.setCellValueFactory(new PropertyValueFactory<>("department"));
-		colCourseKind.setCellValueFactory(new PropertyValueFactory<>("courseKind"));
-		colLevel.setCellValueFactory(new PropertyValueFactory<>("level"));
+		colDepartment.setCellValueFactory(new PropertyValueFactory<>("departmentDesc"));
+		colCourseKind.setCellValueFactory(new PropertyValueFactory<>("courseKindDesc"));
+		colLevel.setCellValueFactory(new PropertyValueFactory<>("levelDesc"));
 		colRollCallDate.setCellValueFactory(new PropertyValueFactory<>("rollCallTime"));
 		colRollSpecial.setCellValueFactory(new PropertyValueFactory<>("cbSpecial"));
 		//colRollSpecial.setCellValueFactory(new PropertyValueFactory<>("special"));
@@ -556,8 +556,7 @@ public class RollCallUploadController extends Application {
 		
 		//到這邊代表時間格式正確，將其組成 yyyy-mm-dd hh(24小時制):mm:ss
 		rcd.setRollCallTime(arrayData[1] + " " + arrayData[3]);
-		//★(可能要刪)先預設特色課程為N
-		rcd.setSpecial("N");
+
 		//取得學員相關資料		
 		//ifnull用法：ifnull(Note,'') 當Note為null時，以空白取代
 		String sql = 
@@ -566,7 +565,11 @@ public class RollCallUploadController extends Application {
 				"  f.Name," + 
 				"  (select d.desc from Student s left join CodeDetail d on s.Department = d.DetailCode and d.MainCode = '004') DepartmentDesc," + 
 				"  (select d.desc from Student s left join CodeDetail d on s.CourseKind = d.DetailCode and d.MainCode = '005') CourseKindDesc," + 
-				"  (select d.desc from Student s left join CodeDetail d on s.Level = d.DetailCode and d.MainCode = '002') LevelDesc " +				
+				"  (select d.desc from Student s left join CodeDetail d on s.Level = d.DetailCode and d.MainCode = '002') LevelDesc, " +
+				"  f.Department," +
+				"  f.CourseKind," +
+				"  f.Level, " +
+				"  f.MemberBelong " +
 				"FROM " + 
 				"  Student f " + 
 				"WHERE " + 
@@ -579,7 +582,7 @@ public class RollCallUploadController extends Application {
 		try {
 			ChoiceBoxSpecial cbSpecial = null;
 			//建立 特色課程 下拉選單的清單內容，此下拉選單為「特色課程」欄位，只有N/Y兩個值
-			ObservableList<String> specialItems = FXCollections.observableArrayList("N", "Y");			
+			ObservableList<String> specialItems = FXCollections.observableArrayList("01-非特色", "02-馬拉松", "03-基礎動作", "04-外師授課", "05-其它");	
 
 			ChoiceBoxImport cbImport = null;
 			//建立 是否匯入 下拉選單的清單內容，此下拉選單為「是否匯入」欄位，只有N/Y兩個值
@@ -594,17 +597,22 @@ public class RollCallUploadController extends Application {
 				count++;
 				rcd.setStudentNo(rs.getString("StudentNo"));
 				rcd.setName(rs.getString("Name"));
-				rcd.setDepartment(rs.getString("DepartmentDesc"));
-				rcd.setCourseKind(rs.getString("CourseKindDesc"));
-				rcd.setLevel(rs.getString("LevelDesc"));
+				rcd.setDepartment(rs.getString("Department"));
+				rcd.setCourseKind(rs.getString("CourseKind"));
+				rcd.setLevel(rs.getString("Level"));
+				rcd.setMemberBelong(rs.getString("MemberBelong"));
+				rcd.setDepartmentDesc(rs.getString("DepartmentDesc"));
+				rcd.setCourseKindDesc(rs.getString("CourseKindDesc"));
+				rcd.setLevelDesc(rs.getString("LevelDesc"));
 				
-				//建立特色課程的下拉選單(預設N)
+				//建立特色課程的下拉選單(預設 01-非特色)
 				cbSpecial = new ChoiceBoxSpecial();
 				cbSpecial.autosize();
 				cbSpecial.setItems(specialItems);
 				cbSpecial.setRollCallTime(rcd.getRollCallTime());
 				cbSpecial.setStudentNo(rcd.getStudentNo());
-				cbSpecial.getSelectionModel().select("N"); //把N當成預設值
+				cbSpecial.getSelectionModel().select("01-非特色"); //把N當成預設值
+				rcd.setCbSpecial(cbSpecial); //把特色課程的下拉選單加給RollCallDetail物件，當作屬性
 
 				//建立是否匯入的下拉選單(預設y)
 				cbImport = new ChoiceBoxImport();
@@ -612,9 +620,7 @@ public class RollCallUploadController extends Application {
 				cbImport.setItems(importItems);
 				cbImport.setRollCallTime(rcd.getRollCallTime());
 				cbImport.setStudentNo(rcd.getStudentNo());
-				cbImport.getSelectionModel().select("Y"); //把N當成預設值
-				
-				rcd.setCbSpecial(cbSpecial); //把特色課程的下拉選單加給RollCallDetail物件，當作屬性
+				cbImport.getSelectionModel().select("Y"); //把N當成預設值				
 				rcd.setCbImport(cbImport); //把匯入的下拉選單加給RollCallDetail物件，當作屬性
 			}
 			//若沒有找到資料時
@@ -735,7 +741,7 @@ public class RollCallUploadController extends Application {
 	    
 		//取得TableView各列資料並寫入資料庫
 		String insertSystemTime = st.getNowTime("yyyyMMddHHmmssSSS");
-		String sqlInsertDetail = "insert into RollCallUploadDetail values(?, ?, ?, ?, ?, null)";
+		String sqlInsertDetail = "insert into RollCallUploadDetail values(?, ?, ?, ?, ?, null, ?, ?, ?, ?, ?)";
 		ObservableList<RollCallUploadDetail> rcds = tvRollCallDetail.getItems();
 		try {
 			conn = dbcf.getSQLiteCon("", "Club.dll");
@@ -751,8 +757,13 @@ public class RollCallUploadController extends Application {
 					pstmt.setString(1, backupFileName);
 					pstmt.setString(2, data.getStudentNo());
 					pstmt.setString(3, data.getRollCallTime());
-					pstmt.setString(4, data.getCbSpecial().getValue());
+					pstmt.setString(4, data.getCbSpecial().getValue().substring(0, 2));
 					pstmt.setString(5, insertSystemTime);
+					pstmt.setString(6, data.getName());
+					pstmt.setString(7, data.getLevel());
+					pstmt.setString(8, data.getMemberBelong());
+					pstmt.setString(9, data.getDepartment());
+					pstmt.setString(10, data.getCourseKind());
 					pstmt.executeUpdate();
 				}
 			} catch (Exception e) {
