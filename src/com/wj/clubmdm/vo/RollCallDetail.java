@@ -18,6 +18,8 @@ public class RollCallDetail {
 	private String level; //程度
 	private String rollCallTime; //點名時間
 	private String special; //特色課程
+	private String memberBelong; //成員所屬	
+	private String memberBelongDesc; //成員所屬中文說明
 	private BtnUpdateRollCall btnUpdate; //更新按鈕
 	private BtnDelRollCall btnDelete; //刪除按鈕
 	public String getSeqNo() {
@@ -80,4 +82,31 @@ public class RollCallDetail {
 	public void setBtnDelete(BtnDelRollCall btnDelete) {
 		this.btnDelete = btnDelete;
 	}
+	public String getMemberBelong() {
+		return memberBelong;
+	}
+	public void setMemberBelong(String memberBelong) {
+		this.memberBelong = memberBelong;
+		this.memberBelongDesc = "";
+		if (memberBelong.substring(0, 1).equalsIgnoreCase("1")) {
+			this.memberBelongDesc += "冬夏令營,";
+		}
+		if (memberBelong.substring(1, 2).equalsIgnoreCase("1")) {
+			this.memberBelongDesc += "學校社團,";
+		}
+		if (memberBelong.substring(2, 3).equalsIgnoreCase("1")) {
+			this.memberBelongDesc += "俱樂部,";
+		}
+		//若是以逗號結尾，把最後一個逗號移除
+		if (this.memberBelongDesc.endsWith(",")) {
+			this.memberBelongDesc = this.memberBelongDesc.substring(0, this.memberBelongDesc.length() - 1);
+		}
+	}
+	public String getMemberBelongDesc() {
+		return memberBelongDesc;
+	}
+	public void setMemberBelongDesc(String memberBelongDesc) {
+		this.memberBelongDesc = memberBelongDesc;
+	}
+	
 }

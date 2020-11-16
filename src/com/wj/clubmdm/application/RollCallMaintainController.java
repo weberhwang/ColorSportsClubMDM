@@ -30,6 +30,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableColumn;
@@ -50,9 +51,25 @@ public class RollCallMaintainController extends Application {
 	@FXML
 	private DatePicker dpChoiceRollCallDateEnd; //選擇點名日期(起日)	
 	@FXML
-	private ChoiceBox<String> cbCondition; //欄位條件(學員編號、身份證字號、姓名 三選一)
+	private ChoiceBox<String> cbID; //查詢條件(學員編號、身份證字號、姓名 三選一)
 	@FXML
-	private TextField tfConditionValue; //查詢條件值
+	private ChoiceBox<String> cbSpecial; //查詢條件-特色課程
+	@FXML
+	private ChoiceBox<String> cbLevel; //查詢條件-程度
+	@FXML 
+	private ChoiceBox<String> cbDepartment; //查詢條件-上課分部
+	@FXML
+	private ChoiceBox<String> cbCourseKind; //查詢條件-課程類別	
+	@FXML
+	private TextField tfIDValue; //查詢條件值
+	@FXML
+	private CheckBox ckbMemberBelongAll; //成員所屬_不限
+	@FXML
+	private CheckBox ckbMemberBelong1; //成員所屬_冬夏令營
+	@FXML
+	private CheckBox ckbMemberBelong2; //成員所屬_學校社團
+	@FXML
+	private CheckBox ckbMemberBelong3; //成員所屬_俱樂部	
 	@FXML
 	private Button btnQueryRollCallData; //查詢點名資料
 	@FXML
@@ -76,6 +93,8 @@ public class RollCallMaintainController extends Application {
 	@FXML
 	private TableColumn<RollCallDetail, String> colSpecial; //點名資料_特色
 	@FXML
+	private TableColumn<RollCallDetail, String> colMemberBelongDesc; //點名資料_成員所屬描述
+	@FXML
 	private TableColumn<RollCallDetail, BtnUpdateRollCall> colUpdate; //點名資料_修改按鈕
 	@FXML
 	private TableColumn<RollCallDetail, BtnDelRollCall> colDelete; //點名資料_刪除按鈕
@@ -86,8 +105,8 @@ public class RollCallMaintainController extends Application {
 	 */
 	public void initialize() {
 		//設定條件下拉選項
-		ObservableList<String> cbConditionValues = FXCollections.observableArrayList("學員編號", "身份證字號", "姓名");
-		cbCondition.setItems(cbConditionValues);
+		//ObservableList<String> cbIDValues = FXCollections.observableArrayList("學員編號", "身份證字號", "姓名");
+		//cbID.setItems(cbIDValues);		
 		
 		//建立點名資料TableView資料連結
 		colSeqNo.setCellValueFactory(new PropertyValueFactory<>("seqNo"));
@@ -98,6 +117,7 @@ public class RollCallMaintainController extends Application {
 		colLevel.setCellValueFactory(new PropertyValueFactory<>("level"));
 		colRollCallTime.setCellValueFactory(new PropertyValueFactory<>("rollCallTime"));
 		colSpecial.setCellValueFactory(new PropertyValueFactory<>("special"));
+		colMemberBelongDesc.setCellValueFactory(new PropertyValueFactory<>("memberBelongDesc"));
 		colUpdate.setCellValueFactory(new PropertyValueFactory<>("btnUpdate"));
 		colDelete.setCellValueFactory(new PropertyValueFactory<>("btnDelete"));
 		
@@ -130,53 +150,129 @@ public class RollCallMaintainController extends Application {
 		dpChoiceRollCallDateEnd.setValue(ld.now());
 		
 		//條件預設定學員編號
-		cbCondition.setValue("學員編號");
+		cbID.setValue("學員編號");
+		//成員所屬條件預設選擇全部
+		ckbMemberBelongAll.setSelected(true);
 	}
 	
 	//查詢點名資料
 	public void queryRollCallDetail() {
+		Alert alert = new Alert(Alert.AlertType.WARNING);
+		alert.setTitle("錯誤");
+		alert.setHeaderText(null);
+		
 		tvRollCallDetail.getItems().clear(); //清除點名TableView裡的資料
 
 		//檢核點名日期是否正確
 		if (dpChoiceRollCallDateBegin.getValue() == null) {		
-			//tvMsg.getItems().clear(); 
-			//insertMsg("「點名日期(起)」輸入有誤！");
+			alert.setContentText("「點名日期區間(起)」有誤");
+			alert.showAndWait();
 			return;			
 		}	
 		
 		//檢核點名日期是否正確
 		if (dpChoiceRollCallDateEnd.getValue() == null) {		
-			//tvMsg.getItems().clear(); 
-			//insertMsg("「點名日期(迄)」輸入有誤！");
+			alert.setContentText("「點名日期區間(迄)」有誤");
+			alert.showAndWait();
 			return;			
 		}
 		
 		String sql = "SELECT " + 
 				     "  a.StudentNo," + 
 				     "  ifnull(b.Name, '') Name," + 
-				     "  (select ifnull(d.desc, '') from Student c left join CodeDetail d on c.Department = d.DetailCode and d.MainCode = '004') DepartmentDesc," + 
-				     "  (select ifnull(d.desc, '') from Student c left join CodeDetail d on c.CourseKind = d.DetailCode and d.MainCode = '005') CourseKindDesc," + 
-				     "  (select ifnull(d.desc, '') from Student c left join CodeDetail d on c.Level = d.DetailCode and d.MainCode = '002') LevelDesc," + 
+					 "  (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = b.Department and d.MainCode = '004') DepartmentDesc, " + 
+					 "  (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = b.CourseKind and d.MainCode = '005') CourseKindDesc, " + 
+					 "  (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = b.Level and d.MainCode = '002') LevelDesc, " + 
 				     "  a.RollCallTime," + 
-				     "  ifnull(a.Special, '') Special " + 
+				     "  (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = a.Special and d.MainCode = '007') SpecialDesc, " + 
+				     "  b.MemberBelong " + 
 				     "FROM " + 
 				     "  RollCallUploadDetail a " + 
 				     "LEFT JOIN " + 
 				     "  Student b on a.StudentNo = b.StudentNo " + 
 				     "WHERE " + 
 				     "  substr(a.RollCallTime, 1, 10) >= ? and substr(a.RollCallTime, 1, 10) <= ?";
+		if (cbSpecial.getValue().equalsIgnoreCase("非特色")) {
+			sql += " and a.Special = '01' ";
+		} else if (cbSpecial.getValue().equalsIgnoreCase("馬拉松")) {
+			sql += " and a.Special = '02' ";
+		} else if (cbSpecial.getValue().equalsIgnoreCase("基礎動作")) {
+			sql += " and a.Special = '03' ";
+		} else if (cbSpecial.getValue().equalsIgnoreCase("外師授課")) {
+			sql += " and a.Special = '04' ";
+		} else if (cbSpecial.getValue().equalsIgnoreCase("其它")) {
+			sql += " and a.Special = '99' ";
+		}
 		
-		if (tfConditionValue.getText().trim().length() > 0) {
-			if (cbCondition.getValue().equalsIgnoreCase("學員編號")) {
-				sql = sql + " and a.StudentNo = ?";
-			} else if (cbCondition.getValue().equalsIgnoreCase("身份證字號")) {
-				sql = sql + " and b.ID = ?";
-			} else if ((cbCondition.getValue().equalsIgnoreCase("姓名"))) {
-				sql = sql + " and b.Name = ?";
+		if (cbLevel.getValue().equalsIgnoreCase("初級")) {
+			sql += " and a.Level = '01' ";
+		} else if (cbLevel.getValue().equalsIgnoreCase("中級")) {
+			sql += " and a.Level = '02' ";			
+		} else if (cbLevel.getValue().equalsIgnoreCase("高級")) {
+			sql += " and a.Level = '03' ";						
+		} else if (cbLevel.getValue().equalsIgnoreCase("C組")) {
+			sql += " and a.Level = '04' ";						
+		} else if (cbLevel.getValue().equalsIgnoreCase("B組")) {
+			sql += " and a.Level = '05' ";						
+		} else if (cbLevel.getValue().equalsIgnoreCase("A組")) {
+			sql += " and a.Level = '06' ";						
+		}
+		
+		if (tfIDValue.getText().trim().length() > 0) {
+			if (cbID.getValue().equalsIgnoreCase("學員編號")) {
+				sql += " and a.StudentNo = ?";
+			} else if (cbID.getValue().equalsIgnoreCase("身份證字號")) {
+				sql += " and b.ID = ?";
+			} else if (cbID.getValue().equalsIgnoreCase("姓名")) {
+				sql += " and b.Name like %?%";
 			}
 		}
-		sql = sql + " order by a.RollCallTime desc";
+		
+		if (cbDepartment.getValue().equalsIgnoreCase("仁愛")) {
+			sql += " and a.Department = '01' ";
+		} else if (cbDepartment.getValue().equalsIgnoreCase("陽光")) {
+			sql += " and a.Department = '02' ";			
+		} else if (cbDepartment.getValue().equalsIgnoreCase("隨選")) {
+			sql += " and a.Department = '99' ";						
+		} 						
+		
+		if (cbCourseKind.getValue().equalsIgnoreCase("花式")) {
+			sql += " and a.CourseKind = '01' ";
+		} else if (cbCourseKind.getValue().equalsIgnoreCase("競速")) {
+			sql += " and a.CourseKind = '02' ";			
+		} else if (cbCourseKind.getValue().equalsIgnoreCase("雙棲")) {
+			sql += " and a.CourseKind = '03' ";
+		}
+		
+		if (ckbMemberBelongAll.isSelected()) {
+			
+		} else {
+			if (ckbMemberBelong1.isSelected() || ckbMemberBelong2.isSelected() || ckbMemberBelong3.isSelected()) {
+				sql += " and (";
+				if (ckbMemberBelong1.isSelected()) {
+					sql += " substr(b.MemberBelong,1,1) = '1' or";
+				}
+				if (ckbMemberBelong2.isSelected()) {
+					sql += " substr(b.MemberBelong,2,1) = '1' or";
+				}
+				if (ckbMemberBelong3.isSelected()) {
+					sql += " substr(b.MemberBelong,3,1) = '1' or";
+				}
+				//移除最後一個「or」符號
+				if (sql.endsWith("or")) {
+					sql = sql.substring(0, sql.length() - 2);
+				} 
+				sql += ")";				
+			} else {
+				//若沒有||符號出現，代表條件有問題，至少要選一個
+				alert.setContentText("「成員所屬」請至少選擇一個條件");
+				alert.showAndWait();
+				return;
+			}
+		}
 
+		System.out.println(sql); //TEST
+		
 		DBConnectionFactory dbf = new DBConnectionFactory();
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -191,8 +287,8 @@ public class RollCallMaintainController extends Application {
 			pstmt.clearParameters();
 			pstmt.setString(1, dpChoiceRollCallDateBegin.getValue().toString()); //點名時間(起)
 			pstmt.setString(2, dpChoiceRollCallDateEnd.getValue().toString()); //點名時間(迄)
-			if (tfConditionValue.getText().length() > 0) {
-				pstmt.setString(3, tfConditionValue.getText().trim()); //點名篩選條件值				
+			if (tfIDValue.getText().length() > 0) {
+				pstmt.setString(3, tfIDValue.getText().trim()); //點名篩選條件值				
 			}			
 			rs = pstmt.executeQuery();
 			while (rs.next()) {
@@ -205,7 +301,8 @@ public class RollCallMaintainController extends Application {
 				rcd.setCourseKind(rs.getString("CourseKindDesc"));
 				rcd.setLevel(rs.getString("LevelDesc"));
 				rcd.setRollCallTime(rs.getString("RollCallTime"));
-				rcd.setSpecial(rs.getString("Special"));
+				rcd.setSpecial(rs.getString("SpecialDesc"));
+				rcd.setMemberBelong(rs.getString("MemberBelong"));
 				
 				//建立刪除點名資料按鈕
 				btnDel = new BtnDelRollCall();
