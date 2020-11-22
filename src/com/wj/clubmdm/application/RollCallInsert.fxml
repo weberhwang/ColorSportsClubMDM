@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.collections.*?>
+
+<AnchorPane prefHeight="173.0" prefWidth="249.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.wj.clubmdm.application.RollCallInsertController">
+	<children>
+		<Label layoutX="17.0" layoutY="18.0" text="新增點名紀錄" textFill="BLUE">
+			<font>
+				<Font name="System Bold" size="18.0" />
+			</font>
+		</Label>
+		<Label layoutX="17.0" layoutY="57.0" text="學員編號">
+			<font>
+				<Font name="System Bold" size="16.0" />
+			</font>
+		</Label>
+		<TextField fx:id="tfStudentNo" layoutX="90.0" layoutY="53.0" prefHeight="29.0" prefWidth="140.0" />
+		<Label layoutX="17.0" layoutY="92.0" text="點名日期">
+			<font>
+				<Font name="System Bold" size="16.0" />
+			</font>
+		</Label>
+		<DatePicker fx:id="dpChoiceRollCallDate" layoutX="90.0" layoutY="92.0" prefHeight="23.0" prefWidth="140.0" />
+		<Label layoutX="17.0" layoutY="127.0" text="特色課程">
+			<font>
+				<Font name="System Bold" size="16.0" />
+			</font>
+		</Label>
+		<ChoiceBox fx:id="cbSpecial" layoutX="90.0" layoutY="124.0" prefHeight="29.0" prefWidth="64.0" value="全部">
+			<items>
+				<FXCollections fx:factory="observableArrayList">
+					<String fx:value="非特色" />
+					<String fx:value="基礎動作" />
+					<String fx:value="外師授課" />
+					<String fx:value="其它" />
+				</FXCollections>
+			</items>
+		</ChoiceBox>
+		<Button fx:id="btnInsertRollCallData" layoutX="172.0" layoutY="124.0" mnemonicParsing="false" onAction="#insertRollCallDetail" prefHeight="29.0" prefWidth="58.0" text="新增">
+			<font>
+				<Font size="14.0" />
+			</font>
+		</Button>
+	</children>
+</AnchorPane>

@@ -6,6 +6,7 @@
 
 package com.wj.clubmdm.application;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,16 +17,15 @@ import java.util.Optional;
 import org.apache.log4j.Logger;
 
 import com.wj.clubmdm.component.BtnDelRollCall;
-import com.wj.clubmdm.component.BtnDelRollCallUpload;
 import com.wj.clubmdm.component.BtnUpdateRollCall;
 import com.wj.clubmdm.vo.RollCallDetail;
 
 import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
@@ -37,15 +37,17 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import rhinoceros.util.date.SystemTime;
 import rhinoceros.util.db.DBConnectionFactory;
 
 public class RollCallMaintainController extends Application {
 	
-	private Logger logger = Logger.getLogger(RollCallMaintainController.class);
-	private LocalDate ld;
+	private Logger logger = Logger.getLogger(RollCallMaintainController.class);	
+	private Stage subStage; //獨佔彈跳視窗共用Stage
+	
 	@FXML
 	private DatePicker dpChoiceRollCallDateBegin; //選擇點名日期(起日)
 	@FXML
@@ -104,6 +106,10 @@ public class RollCallMaintainController extends Application {
 	 * 初始化
 	 */
 	public void initialize() {
+		//建立共用的獨佔彈跳視窗專用Stage
+		subStage = new Stage();
+		subStage.initModality(Modality.APPLICATION_MODAL);
+		
 		//設定條件下拉選項
 		//ObservableList<String> cbIDValues = FXCollections.observableArrayList("學員編號", "身份證字號", "姓名");
 		//cbID.setItems(cbIDValues);		
@@ -146,8 +152,8 @@ public class RollCallMaintainController extends Application {
 		dpChoiceRollCallDateEnd.setConverter(converter);
 		
 		//預設日期區間為當日
-		dpChoiceRollCallDateBegin.setValue(ld.now());
-		dpChoiceRollCallDateEnd.setValue(ld.now());
+		dpChoiceRollCallDateBegin.setValue(LocalDate.now());
+		dpChoiceRollCallDateEnd.setValue(LocalDate.now());
 		
 		//條件預設定學員編號
 		cbID.setValue("學員編號");
@@ -270,8 +276,6 @@ public class RollCallMaintainController extends Application {
 				return;
 			}
 		}
-
-		System.out.println(sql); //TEST
 		
 		DBConnectionFactory dbf = new DBConnectionFactory();
 		Connection conn = null;
@@ -354,7 +358,7 @@ public class RollCallMaintainController extends Application {
 		}		
 	}	
 
-	//刪除指定批次的所有資料	
+	//刪除指定的點名資料	
 	public void delRollCallDetail(BtnDelRollCall btnDel) {	
 		/*
 		 * 跳出確認刪除的視窗
@@ -399,6 +403,21 @@ public class RollCallMaintainController extends Application {
 		}		
 		//重新查詢上傳批次資料
 		queryRollCallDetail();
+	}	
+
+	//新增點名資料
+	public void insert() {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("RollCallInsert.fxml"));			
+		AnchorPane root = null;
+		try {
+			root = (AnchorPane)loader.load();
+		} catch (IOException e) {
+			logger.info(e.getMessage(), e);
+		}
+		subStage.setScene(new Scene(root, 249, 173));
+		subStage.setTitle("COLOR SPORTS CLUB MDM_V1.0");
+		subStage.setResizable(false); //不可改變視窗大小
+		subStage.show();  
 	}	
 	
 	@Override
