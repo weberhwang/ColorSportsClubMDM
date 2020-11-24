@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.wj.clubmdm.application.LoginController">
+<AnchorPane prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.wj.clubmdm.application.LoginController">
    <children>
       <Label layoutX="388.0" layoutY="120.0" text="Welcome to Login MDM">
          <font>
@@ -30,12 +30,12 @@
             <Font size="16.0" />
          </font>
       </Button>
-      <Button fx:id="btnForgetPWD" layoutX="547.0" layoutY="453.0" mnemonicParsing="false" onAction="#forgetPWD" prefHeight="36.0" prefWidth="109.0" text="忘記密碼">
+      <Button fx:id="btnForgetPWD" layoutX="614.0" layoutY="453.0" mnemonicParsing="false" onAction="#forgetPWD" prefHeight="36.0" prefWidth="109.0" text="忘記密碼">
          <font>
             <Font size="16.0" />
          </font>
       </Button>
-      <Button fx:id="btnRegister" layoutX="666.0" layoutY="453.0" mnemonicParsing="false" onAction="#register" prefHeight="36.0" prefWidth="57.0" text="註冊">
+      <Button fx:id="btnRegister" layoutX="547.0" layoutY="453.0" mnemonicParsing="false" onAction="#register" prefHeight="36.0" prefWidth="57.0" text="註冊" visible="false">
          <font>
             <Font size="16.0" />
          </font>

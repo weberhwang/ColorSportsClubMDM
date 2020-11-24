@@ -19,8 +19,11 @@ import org.apache.log4j.Logger;
 import com.wj.clubmdm.component.BtnDelRollCall;
 import com.wj.clubmdm.component.BtnUpdateRollCall;
 import com.wj.clubmdm.vo.RollCallDetail;
+import com.wj.clubmdm.vo.RollCallUploadDetail;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -41,6 +44,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import rhinoceros.util.date.SystemTime;
 import rhinoceros.util.db.DBConnectionFactory;
 
 public class RollCallMaintainController extends Application {
@@ -75,6 +79,16 @@ public class RollCallMaintainController extends Application {
 	@FXML
 	private Button btnQueryRollCallData; //查詢點名資料
 	@FXML
+	private TextField tfStudentNo; //學員編號
+	@FXML
+	private DatePicker dpChoiceRollCallDate; //選擇點名日期
+	@FXML
+	private TextField tfRollCallHH; //選擇點名時間(小時)
+	@FXML
+	private TextField tfRollCallMM; //選擇點名時間(分鐘)	
+	@FXML
+	private ChoiceBox<String> cbSpecialInsert; //查詢條件-特色課程		
+	@FXML
 	private Button btnInsertRollCallData; //新增點名資料	
 	@FXML
 	private TableView<RollCallDetail> tvRollCallDetail; //點名資料
@@ -97,10 +111,7 @@ public class RollCallMaintainController extends Application {
 	@FXML
 	private TableColumn<RollCallDetail, String> colMemberBelongDesc; //點名資料_成員所屬描述
 	@FXML
-	private TableColumn<RollCallDetail, BtnUpdateRollCall> colUpdate; //點名資料_修改按鈕
-	@FXML
 	private TableColumn<RollCallDetail, BtnDelRollCall> colDelete; //點名資料_刪除按鈕
-	
 	
 	/*
 	 * 初始化
@@ -124,7 +135,6 @@ public class RollCallMaintainController extends Application {
 		colRollCallTime.setCellValueFactory(new PropertyValueFactory<>("rollCallTime"));
 		colSpecial.setCellValueFactory(new PropertyValueFactory<>("special"));
 		colMemberBelongDesc.setCellValueFactory(new PropertyValueFactory<>("memberBelongDesc"));
-		colUpdate.setCellValueFactory(new PropertyValueFactory<>("btnUpdate"));
 		colDelete.setCellValueFactory(new PropertyValueFactory<>("btnDelete"));
 		
 		//設定日期選擇器的格式
@@ -150,15 +160,26 @@ public class RollCallMaintainController extends Application {
 		};
 		dpChoiceRollCallDateBegin.setConverter(converter);
 		dpChoiceRollCallDateEnd.setConverter(converter);
+		dpChoiceRollCallDate.setConverter(converter);
 		
 		//預設日期區間為當日
 		dpChoiceRollCallDateBegin.setValue(LocalDate.now());
 		dpChoiceRollCallDateEnd.setValue(LocalDate.now());
+		dpChoiceRollCallDate.setValue(LocalDate.now());
 		
 		//條件預設定學員編號
 		cbID.setValue("學員編號");
 		//成員所屬條件預設選擇全部
 		ckbMemberBelongAll.setSelected(true);
+		
+		//建立 新增時 特色課程 下拉選單的清單內容
+		ObservableList<String> specialItems = FXCollections.observableArrayList("01-非特色", "02-馬拉松", "03-基礎動作", "04-外師授課", "99-其它");	
+		cbSpecialInsert.autosize();
+		cbSpecialInsert.setItems(specialItems);
+		cbSpecialInsert.getSelectionModel().select("01-非特色"); //把非特色當成預設值		
+		
+		//查詢點名資料
+		queryRollCallDetail(); 
 	}
 	
 	//查詢點名資料
@@ -405,8 +426,11 @@ public class RollCallMaintainController extends Application {
 		queryRollCallDetail();
 	}	
 
+	
 	//新增點名資料
 	public void insert() {
+		//發現寫入後無法自動回頭更新原本母視窗，故先改回由母視窗新增的作法
+		/*
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("RollCallInsert.fxml"));			
 		AnchorPane root = null;
 		try {
@@ -414,10 +438,228 @@ public class RollCallMaintainController extends Application {
 		} catch (IOException e) {
 			logger.info(e.getMessage(), e);
 		}
-		subStage.setScene(new Scene(root, 249, 173));
+		subStage.setScene(new Scene(root, 346, 251));
 		subStage.setTitle("COLOR SPORTS CLUB MDM_V1.0");
 		subStage.setResizable(false); //不可改變視窗大小
-		subStage.show();  
+		subStage.show();
+		*/  
+		Integer hhTemp = null;
+		Integer mmTemp = null;
+	    String studentName = "";	
+		Alert alert = new Alert(Alert.AlertType.INFORMATION);
+		alert.setHeaderText("輸入錯誤");
+				
+		DBConnectionFactory dbf = new DBConnectionFactory();
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
+		//檢核學員編號是否有輸入
+		if (tfStudentNo.getText().trim().length() == 0) {
+			alert.setContentText("未輸入學員編號");
+			alert.showAndWait();
+			return;
+		} else {
+			//確認學員編號是否存在
+			String sqlChkStudent = "select Name from Student where StudentNo = ?";
+			try {		
+				conn = dbf.getSQLiteCon("", "Club.dll");
+				pstmt = conn.prepareStatement(sqlChkStudent);
+				pstmt.clearParameters();
+				pstmt.setString(1, tfStudentNo.getText().trim());
+				rs = pstmt.executeQuery();
+				while (rs.next()) {
+					studentName = rs.getString("Name");
+				}
+				if (studentName.trim().equalsIgnoreCase("")) {
+					alert.setContentText("學員編號不存在");
+					alert.showAndWait();
+					return;					
+				}
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			} finally {
+				try {
+					pstmt.close();
+				} catch (Exception e) {
+					logger.info(e.getMessage(), e);
+				}
+				try {
+					conn.close();
+				} catch (Exception e) {
+					logger.info(e.getMessage(), e);
+				}						
+			}
+		}
+		
+		if (dpChoiceRollCallDate.getValue() == null) {		
+			alert.setContentText("未選擇點名日期");
+			alert.showAndWait();
+			return;		
+		}
+		
+		if (tfRollCallHH.getText().trim().length() == 0) {
+			alert.setContentText("未輸入小時(00-23)");
+			alert.showAndWait();
+			return;					
+		} else {
+			try {
+				hhTemp = Integer.parseInt(tfRollCallHH.getText().trim());
+				if ((hhTemp < 0) || (hhTemp > 23)) {					
+					alert.setContentText("輸入「小時」不正確 須為 00-23");
+					alert.showAndWait();
+					return;														
+				} else {
+					if (tfRollCallHH.getText().length() == 1) {
+						tfRollCallHH.setText("0" + tfRollCallHH.getText()); //若只輸入1碼，則前面補0
+					}
+				}
+			} catch (Exception e) {
+				alert.setContentText("輸入「小時」不正確 須為 00-23");
+				alert.showAndWait();
+				return;									
+			}
+		}
+		
+		if (tfRollCallMM.getText().trim().length() == 0) {
+			alert.setContentText("未輸入分鐘(01-59)");
+			alert.showAndWait();
+			return;					
+		} else {
+			try {
+				mmTemp = Integer.parseInt(tfRollCallMM.getText().trim());
+				if ((mmTemp < 0) || (mmTemp > 59)) {
+					alert.setContentText("輸入「分鐘」不正確 須為 00-59");
+					alert.showAndWait();
+					return;														
+				} else {
+					if (tfRollCallMM.getText().length() == 1) {
+						tfRollCallMM.setText("0" + tfRollCallMM.getText()); //若只輸入1碼，則前面補0
+					}
+				}
+			} catch (Exception e) {
+				alert.setContentText("輸入「分鐘」不正確 須為 00-59");
+				alert.showAndWait();
+				return;									
+			}			
+		}	
+		
+		try {
+			RollCallUploadDetail rcd = new RollCallUploadDetail();
+			String specialCode = "";
+			//取學員基本資料
+			String sql = 
+					"SELECT " +
+					"  Name," + 
+					"  Department," +
+					"  CourseKind," +
+					"  Level, " +
+					"  MemberBelong " +
+					"FROM " + 
+					"  Student " + 
+					"WHERE " + 
+					"  StudentNo = ?";
+			conn = dbf.getSQLiteCon("", "Club.dll");
+			pstmt = conn.prepareStatement(sql);
+			pstmt.clearParameters();
+			pstmt.setString(1, tfStudentNo.getText().trim());			
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				rcd.setStudentNo(tfStudentNo.getText().trim());
+				rcd.setName(rs.getString("Name"));
+				rcd.setDepartment(rs.getString("Department"));
+				rcd.setCourseKind(rs.getString("CourseKind"));
+				rcd.setLevel(rs.getString("Level"));
+				rcd.setMemberBelong(rs.getString("MemberBelong"));
+				//"01-非特色", "02-馬拉松", "03-基礎動作", "04-外師授課", "05-其它"
+				switch(cbSpecialInsert.getValue()) {
+					case "01-非特色":
+						specialCode = "01";
+						break;
+					case "02-馬拉松":
+						specialCode = "02";
+						break;
+					case "03-基礎動作":
+						specialCode = "03";
+						break;
+					case "04-外師授課":
+						specialCode = "04";
+						break;
+					case "99-其它":
+						specialCode = "99";
+						break;
+				}
+				if (specialCode.equalsIgnoreCase("")) {
+					alert.setContentText("特色課程下拉選單資料有問題，請與開發人員確認。");
+					alert.showAndWait();
+					return;						
+				}	
+			}
+
+			rs.close();
+			pstmt.close();
+
+			//寫入資料庫
+			sql = "INSERT INTO RollCallUploadDetail "
+					+ "(FileName, StudentNo, RollCallTime, Special, CreateTime, Name, Level, MemberBelong, Department, CourseKind) "
+					+ "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			conn = dbf.getSQLiteCon("", "Club.dll");
+			pstmt = conn.prepareStatement(sql);
+			pstmt.clearParameters();
+			SystemTime st = new SystemTime();
+			pstmt.setString(1, "UserKeyIn_" + st.getNowTime("yyyy-MM-dd HH:mm:ss"));
+			pstmt.setString(2, tfStudentNo.getText().trim());
+			pstmt.setString(3, dpChoiceRollCallDate.getValue() + " " + tfRollCallHH.getText().trim() + ":" + tfRollCallMM.getText().trim() + ":00");
+			pstmt.setString(4, specialCode);
+			pstmt.setString(5, st.getNowTime("yyyyMMddHHmmssSSS"));
+			pstmt.setString(6, rcd.getName());
+			pstmt.setString(7, rcd.getLevel());
+			pstmt.setString(8, rcd.getMemberBelong());
+			pstmt.setString(9, rcd.getDepartment());
+			pstmt.setString(10, rcd.getCourseKind());
+			pstmt.executeUpdate();			
+
+			alert.setHeaderText("");
+			alert.setContentText("點名資料新增成功！");
+			alert.showAndWait();
+			
+			tfStudentNo.setText("");
+			tfRollCallHH.setText("");
+			tfRollCallMM.setText("");
+			cbSpecialInsert.setValue("01-非特色");
+			
+			//查詢點名資料
+			queryRollCallDetail(); 
+
+		} catch (Exception e) {
+			alert.setContentText("點名資料新增失敗(資料已存在)！");
+			alert.showAndWait();
+			logger.info(e.getMessage(), e);
+			return;	
+		} finally {
+			try {
+				if (rs != null) {
+					rs.close();
+				}
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+			try {
+				if (conn != null) {
+					conn.close();
+				}
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+		}		
+
 	}	
 	
 	@Override

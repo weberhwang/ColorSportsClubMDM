@@ -611,7 +611,7 @@ public class RollCallUploadController extends Application {
 				cbSpecial.setItems(specialItems);
 				cbSpecial.setRollCallTime(rcd.getRollCallTime());
 				cbSpecial.setStudentNo(rcd.getStudentNo());
-				cbSpecial.getSelectionModel().select("01-非特色"); //把N當成預設值
+				cbSpecial.getSelectionModel().select("01-非特色"); //把「非特色」當成預設值
 				rcd.setCbSpecial(cbSpecial); //把特色課程的下拉選單加給RollCallDetail物件，當作屬性
 
 				//建立是否匯入的下拉選單(預設y)

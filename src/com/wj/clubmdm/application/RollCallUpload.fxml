@@ -14,7 +14,7 @@
             <Font name="System Bold" size="16.0" />
          </font>
       </Label>
-      <DatePicker fx:id="dpChoiceRollCallDate" layoutX="166.0" layoutY="16.0" prefHeight="23.0" prefWidth="123.0" />
+      <DatePicker fx:id="dpChoiceRollCallDate" layoutX="166.0" layoutY="16.0" prefHeight="30.0" prefWidth="162.0" />
       <Label layoutX="52.0" layoutY="54.0" text="選擇點名檔">
          <font>
             <Font name="System Bold" size="16.0" />
@@ -56,10 +56,10 @@
       </Button>
       <TableView fx:id="tvRollCallBatch" layoutX="52.0" layoutY="448.0" prefHeight="216.0" prefWidth="557.0">
         <columns>
-            <TableColumn fx:id="colBatchDel" prefWidth="64.0" text="刪除" />
-          <TableColumn fx:id="colBatchRollCallDate" prefWidth="83.0" text="點名日期" />
-          <TableColumn fx:id="colBatchRollCreateTime" prefWidth="129.0" text="檔案匯入時間" />
-            <TableColumn fx:id="colBatchRollFileName" prefWidth="317.0" text="備份檔名" />
+            <TableColumn fx:id="colBatchDel" prefWidth="59.0" text="操作" />
+          <TableColumn fx:id="colBatchRollCallDate" prefWidth="101.0" text="點名日期" />
+          <TableColumn fx:id="colBatchRollCreateTime" prefWidth="155.0" text="檔案匯入時間" />
+            <TableColumn fx:id="colBatchRollFileName" prefWidth="360.0" text="備份檔名" />
         </columns>
       </TableView>
       <TableView fx:id="tvMsg" layoutX="620.0" layoutY="448.0" prefHeight="216.0" prefWidth="538.0">
