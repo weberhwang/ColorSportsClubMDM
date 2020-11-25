@@ -12,7 +12,6 @@
 
 <AnchorPane prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.wj.clubmdm.application.RollCallMaintainController">
 	<children>
-      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#ffe3ef" height="50.0" layoutX="58.0" layoutY="161.0" stroke="BLACK" strokeType="INSIDE" width="1097.0" />
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#d3ebcb" height="89.0" layoutX="58.0" layoutY="14.0" stroke="BLACK" strokeType="INSIDE" width="1097.0" />
 		<Label layoutX="70.0" layoutY="30.0" text="點名日期區間">
 			<font>
@@ -180,12 +179,13 @@
 				<Font size="14.0" />
 			</font>
 		</Button>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#ffe3ef" height="50.0" layoutX="58.0" layoutY="161.0" stroke="BLACK" strokeType="INSIDE" width="1097.0" />
       <Label layoutX="70.0" layoutY="175.0" text="學員編號">
          <font>
             <Font name="System Bold" size="16.0" />
          </font>
       </Label>
-      <Label layoutX="144.0" layoutY="174.0" prefHeight="20.0" prefWidth="130.0" textFill="BLUE">
+      <Label fx:id="tfIDUpdate" layoutX="144.0" layoutY="174.0" prefHeight="20.0" prefWidth="130.0" textFill="BLUE">
          <font>
             <Font size="18.0" />
          </font>
@@ -195,19 +195,19 @@
             <Font name="System Bold" size="16.0" />
          </font>
       </Label>
-      <DatePicker layoutX="361.0" layoutY="171.0" prefHeight="23.0" prefWidth="140.0" />
+      <DatePicker fx:id="dpChoiceRollCallDateUpdate" layoutX="361.0" layoutY="171.0" prefHeight="23.0" prefWidth="140.0" />
       <Label layoutX="517.0" layoutY="175.0" text="點名時間">
          <font>
             <Font name="System Bold" size="16.0" />
          </font>
       </Label>
-      <TextField layoutX="590.0" layoutY="171.0" prefHeight="30.0" prefWidth="42.0" promptText="14" />
+      <TextField fx:id="tfRollCallHHUpdate" layoutX="590.0" layoutY="171.0" prefHeight="30.0" prefWidth="42.0" promptText="14" />
       <Label layoutX="637.0" layoutY="175.0" text="時">
          <font>
             <Font name="System Bold" size="16.0" />
          </font>
       </Label>
-      <TextField layoutX="667.0" layoutY="171.0" prefHeight="30.0" prefWidth="42.0" promptText="59" />
+      <TextField fx:id="tfRollCallMMUpdate" layoutX="667.0" layoutY="171.0" prefHeight="30.0" prefWidth="42.0" promptText="59" />
       <Label layoutX="714.0" layoutY="175.0" text="分">
          <font>
             <Font name="System Bold" size="16.0" />
@@ -218,7 +218,7 @@
             <Font name="System Bold" size="16.0" />
          </font>
       </Label>
-      <ChoiceBox layoutX="817.0" layoutY="171.0" prefHeight="30.0" prefWidth="140.0" value="全部">
+      <ChoiceBox fx:id="cbSpecialUpdate" layoutX="817.0" layoutY="171.0" prefHeight="30.0" prefWidth="140.0" value="全部">
          <items>
             <FXCollections fx:factory="observableArrayList">
                <String fx:value="非特色" />
@@ -228,7 +228,8 @@
             </FXCollections>
          </items>
       </ChoiceBox>
-      <Button layoutX="1086.0" layoutY="172.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="58.0" text="修改">
+      <TextField fx:id="tfRollCallSSUpdate" layoutX="969.0" layoutY="171.0" prefHeight="30.0" prefWidth="42.0" promptText="59" visible="false" />
+      <Button fx:id="btnUpdateRollCallData" layoutX="1086.0" layoutY="172.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="58.0" text="修改">
          <font>
             <Font size="14.0" />
          </font>

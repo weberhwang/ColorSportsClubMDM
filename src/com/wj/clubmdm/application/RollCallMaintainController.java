@@ -36,7 +36,9 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -90,6 +92,20 @@ public class RollCallMaintainController extends Application {
 	private ChoiceBox<String> cbSpecialInsert; //查詢條件-特色課程		
 	@FXML
 	private Button btnInsertRollCallData; //新增點名資料	
+	@FXML
+	private Label tfIDUpdate; //修改_ID欄位
+	@FXML
+	private DatePicker dpChoiceRollCallDateUpdate; //修改_選擇點名日期	
+	@FXML
+	private TextField tfRollCallHHUpdate; //修改_選擇點名時間(小時)
+	@FXML
+	private TextField tfRollCallMMUpdate; //修改_選擇點名時間(分鐘)	
+	@FXML
+	private TextField tfRollCallSSUpdate; //修改_選擇點名時間(秒) 此欄位用來記錄原始的秒數，不顯示，屬隱藏欄位	
+	@FXML
+	private ChoiceBox<String> cbSpecialUpdate; //修改_特色課程	
+	@FXML
+	private Button btnUpdateRollCallData; //修改_點名資料	
 	@FXML
 	private TableView<RollCallDetail> tvRollCallDetail; //點名資料
 	@FXML
@@ -161,6 +177,7 @@ public class RollCallMaintainController extends Application {
 		dpChoiceRollCallDateBegin.setConverter(converter);
 		dpChoiceRollCallDateEnd.setConverter(converter);
 		dpChoiceRollCallDate.setConverter(converter);
+		dpChoiceRollCallDateUpdate.setConverter(converter);
 		
 		//預設日期區間為當日
 		dpChoiceRollCallDateBegin.setValue(LocalDate.now());
@@ -177,6 +194,52 @@ public class RollCallMaintainController extends Application {
 		cbSpecialInsert.autosize();
 		cbSpecialInsert.setItems(specialItems);
 		cbSpecialInsert.getSelectionModel().select("01-非特色"); //把非特色當成預設值		
+		
+		//建立 修改時 特色課程 下拉選單的清單內容
+		cbSpecialUpdate.autosize();
+		cbSpecialUpdate.setItems(specialItems);
+			
+		//建立tvRollCallDetail TableView Double click 觸發功能
+		tvRollCallDetail.setRowFactory( tv -> {
+			TableRow<RollCallDetail> row = new TableRow<>();
+			row.setOnMouseClicked(event -> {
+				if (event.getClickCount() == 2 && (!row.isEmpty())) {
+					RollCallDetail rowData = row.getItem();
+					tfIDUpdate.setText(rowData.getStudentNo());
+					//0123456789ABCDEFGHI
+					//2020-11-25 17:59:00
+					tfRollCallHHUpdate.setText(rowData.getRollCallTime().substring(11, 13));
+					tfRollCallMMUpdate.setText(rowData.getRollCallTime().substring(14, 16));
+					tfRollCallSSUpdate.setText(rowData.getRollCallTime().substring(17, 19));
+					LocalDate dateUpdate = LocalDate.of(
+							Integer.parseInt(rowData.getRollCallTime().substring(0, 4)), 
+							Integer.parseInt(rowData.getRollCallTime().substring(5, 7)), 
+							Integer.parseInt(rowData.getRollCallTime().substring(8, 10))
+							);
+					
+					dpChoiceRollCallDateUpdate.setValue(dateUpdate);
+
+					switch(rowData.getSpecial()) {
+						case "非特色":
+							cbSpecialUpdate.setValue("01-非特色");
+							break;
+						case "馬拉松":
+							cbSpecialUpdate.setValue("02-馬拉松");
+							break;
+						case "基礎動作":
+							cbSpecialUpdate.setValue("03-基礎動作");
+							break;
+						case "外師授課":
+							cbSpecialUpdate.setValue("04-外師授課");
+							break;
+						case "其它":
+							cbSpecialUpdate.setValue("99-其它");
+							break;
+					}
+				}
+			});
+			return row;
+		});
 		
 		//查詢點名資料
 		queryRollCallDetail(); 
@@ -429,7 +492,11 @@ public class RollCallMaintainController extends Application {
 	
 	//新增點名資料
 	public void insert() {
-		//發現寫入後無法自動回頭更新原本母視窗，故先改回由母視窗新增的作法
+		/*
+		 * 暫時不採用另開視窗的方法，若要採新開視窗，而且在關閉視窗時會更新母視窗畫面的話，
+		 * 記得一定要使用subStage.showAndWait();
+		 * 這樣母視窗才會在關閉的時候接著執行，若採用subStage.show()的話，在開啟子視窗時，母視窗的程式已被並行執行。
+		 */
 		/*
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("RollCallInsert.fxml"));			
 		AnchorPane root = null;
@@ -441,8 +508,11 @@ public class RollCallMaintainController extends Application {
 		subStage.setScene(new Scene(root, 346, 251));
 		subStage.setTitle("COLOR SPORTS CLUB MDM_V1.0");
 		subStage.setResizable(false); //不可改變視窗大小
-		subStage.show();
-		*/  
+		//subStage.show();
+		subStage.showAndWait();
+		queryRollCallDetail(); 
+        */		
+		  
 		Integer hhTemp = null;
 		Integer mmTemp = null;
 	    String studentName = "";	
