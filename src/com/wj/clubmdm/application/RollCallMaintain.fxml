@@ -141,7 +141,7 @@
             <Font name="System Bold" size="16.0" />
          </font>
       </Label>
-      <DatePicker fx:id="dpChoiceRollCallDate" layoutX="361.0" layoutY="117.0" prefHeight="23.0" prefWidth="140.0" />
+      <DatePicker fx:id="dpChoiceRollCallDateInsert" layoutX="361.0" layoutY="117.0" prefHeight="23.0" prefWidth="140.0" />
       <Label layoutX="517.0" layoutY="121.0" text="點名時間">
          <font>
             <Font name="System Bold" size="16.0" />
@@ -174,7 +174,7 @@
             </FXCollections>
          </items>
       </ChoiceBox>
-		<Button fx:id="btnInsertRollCallData" layoutX="1086.0" layoutY="118.0" mnemonicParsing="false" onAction="#insert" prefHeight="29.0" prefWidth="58.0" text="新增">
+		<Button fx:id="btnInsertRollCallData" layoutX="1086.0" layoutY="118.0" mnemonicParsing="false" onAction="#insertRollCallDetail" prefHeight="29.0" prefWidth="58.0" text="新增">
 			<font>
 				<Font size="14.0" />
 			</font>
@@ -229,7 +229,7 @@
          </items>
       </ChoiceBox>
       <TextField fx:id="tfRollCallSSUpdate" layoutX="969.0" layoutY="171.0" prefHeight="30.0" prefWidth="42.0" promptText="59" visible="false" />
-      <Button fx:id="btnUpdateRollCallData" layoutX="1086.0" layoutY="172.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="58.0" text="修改">
+      <Button fx:id="btnUpdateRollCallData" layoutX="1086.0" layoutY="172.0" mnemonicParsing="false" onAction="#updateRollCallDetail" prefHeight="29.0" prefWidth="58.0" text="修改">
          <font>
             <Font size="14.0" />
          </font>

@@ -6,7 +6,6 @@
 
 package com.wj.clubmdm.application;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,7 +16,6 @@ import java.util.Optional;
 import org.apache.log4j.Logger;
 
 import com.wj.clubmdm.component.BtnDelRollCall;
-import com.wj.clubmdm.component.BtnUpdateRollCall;
 import com.wj.clubmdm.vo.RollCallDetail;
 import com.wj.clubmdm.vo.RollCallUploadDetail;
 
@@ -27,8 +25,6 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
@@ -42,7 +38,6 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
@@ -53,7 +48,8 @@ public class RollCallMaintainController extends Application {
 	
 	private Logger logger = Logger.getLogger(RollCallMaintainController.class);	
 	private Stage subStage; //獨佔彈跳視窗共用Stage
-	
+	//修改前資料暫存物件
+	RollCallDetail oldRCD = null;	
 	@FXML
 	private DatePicker dpChoiceRollCallDateBegin; //選擇點名日期(起日)
 	@FXML
@@ -83,7 +79,7 @@ public class RollCallMaintainController extends Application {
 	@FXML
 	private TextField tfStudentNo; //學員編號
 	@FXML
-	private DatePicker dpChoiceRollCallDate; //選擇點名日期
+	private DatePicker dpChoiceRollCallDateInsert; //選擇點名日期
 	@FXML
 	private TextField tfRollCallHH; //選擇點名時間(小時)
 	@FXML
@@ -176,13 +172,15 @@ public class RollCallMaintainController extends Application {
 		};
 		dpChoiceRollCallDateBegin.setConverter(converter);
 		dpChoiceRollCallDateEnd.setConverter(converter);
-		dpChoiceRollCallDate.setConverter(converter);
+		dpChoiceRollCallDateInsert.setConverter(converter);
 		dpChoiceRollCallDateUpdate.setConverter(converter);
 		
 		//預設日期區間為當日
 		dpChoiceRollCallDateBegin.setValue(LocalDate.now());
 		dpChoiceRollCallDateEnd.setValue(LocalDate.now());
-		dpChoiceRollCallDate.setValue(LocalDate.now());
+		dpChoiceRollCallDateInsert.setValue(LocalDate.now());
+		dpChoiceRollCallDateUpdate.setValue(LocalDate.now());
+
 		
 		//條件預設定學員編號
 		cbID.setValue("學員編號");
@@ -204,22 +202,21 @@ public class RollCallMaintainController extends Application {
 			TableRow<RollCallDetail> row = new TableRow<>();
 			row.setOnMouseClicked(event -> {
 				if (event.getClickCount() == 2 && (!row.isEmpty())) {
-					RollCallDetail rowData = row.getItem();
-					tfIDUpdate.setText(rowData.getStudentNo());
+					oldRCD = row.getItem();
+					tfIDUpdate.setText(oldRCD.getStudentNo());
 					//0123456789ABCDEFGHI
 					//2020-11-25 17:59:00
-					tfRollCallHHUpdate.setText(rowData.getRollCallTime().substring(11, 13));
-					tfRollCallMMUpdate.setText(rowData.getRollCallTime().substring(14, 16));
-					tfRollCallSSUpdate.setText(rowData.getRollCallTime().substring(17, 19));
+					tfRollCallHHUpdate.setText(oldRCD.getRollCallTime().substring(11, 13));
+					tfRollCallMMUpdate.setText(oldRCD.getRollCallTime().substring(14, 16));
+					tfRollCallSSUpdate.setText(oldRCD.getRollCallTime().substring(17, 19));
 					LocalDate dateUpdate = LocalDate.of(
-							Integer.parseInt(rowData.getRollCallTime().substring(0, 4)), 
-							Integer.parseInt(rowData.getRollCallTime().substring(5, 7)), 
-							Integer.parseInt(rowData.getRollCallTime().substring(8, 10))
+							Integer.parseInt(oldRCD.getRollCallTime().substring(0, 4)), 
+							Integer.parseInt(oldRCD.getRollCallTime().substring(5, 7)), 
+							Integer.parseInt(oldRCD.getRollCallTime().substring(8, 10))
 							);
 					
 					dpChoiceRollCallDateUpdate.setValue(dateUpdate);
-
-					switch(rowData.getSpecial()) {
+					switch(oldRCD.getSpecial()) {
 						case "非特色":
 							cbSpecialUpdate.setValue("01-非特色");
 							break;
@@ -369,7 +366,6 @@ public class RollCallMaintainController extends Application {
 		try {		
 			RollCallDetail rcd = null;  
 			BtnDelRollCall btnDel = null;
-			BtnUpdateRollCall btnUpdate = null;			
 			conn = dbf.getSQLiteCon("", "Club.dll");
 			pstmt = conn.prepareStatement(sql);
 			pstmt.clearParameters();
@@ -405,20 +401,6 @@ public class RollCallMaintainController extends Application {
 			        }
 			    });
 				rcd.setBtnDelete(btnDel);
-
-				//建立修改點名資料按鈕
-				btnUpdate = new BtnUpdateRollCall();
-				btnUpdate.autosize();
-				btnUpdate.setText("修改");
-				btnUpdate.setStudentNo(rs.getString("StudentNo"));
-				btnUpdate.setRollCallTime(rs.getString("RollCallTime"));
-				btnUpdate.setOnAction(new EventHandler<ActionEvent>() {
-			        public void handle(ActionEvent event) {
-			        	BtnUpdateRollCall btnUpdate = (BtnUpdateRollCall)event.getSource();
-			        	//updateRollCallDetail(btnUpdate);
-			        }
-			    });
-			    rcd.setBtnUpdate(btnUpdate);
 			    tvRollCallDetail.getItems().add(rcd);
 			}	
 		} catch (Exception e) {
@@ -489,9 +471,8 @@ public class RollCallMaintainController extends Application {
 		queryRollCallDetail();
 	}	
 
-	
 	//新增點名資料
-	public void insert() {
+	public void insertRollCallDetail() {
 		/*
 		 * 暫時不採用另開視窗的方法，若要採新開視窗，而且在關閉視窗時會更新母視窗畫面的話，
 		 * 記得一定要使用subStage.showAndWait();
@@ -562,7 +543,7 @@ public class RollCallMaintainController extends Application {
 			}
 		}
 		
-		if (dpChoiceRollCallDate.getValue() == null) {		
+		if (dpChoiceRollCallDateInsert.getValue() == null) {		
 			alert.setContentText("未選擇點名日期");
 			alert.showAndWait();
 			return;		
@@ -641,7 +622,7 @@ public class RollCallMaintainController extends Application {
 				rcd.setCourseKind(rs.getString("CourseKind"));
 				rcd.setLevel(rs.getString("Level"));
 				rcd.setMemberBelong(rs.getString("MemberBelong"));
-				//"01-非特色", "02-馬拉松", "03-基礎動作", "04-外師授課", "05-其它"
+				//"01-非特色", "02-馬拉松", "03-基礎動作", "04-外師授課", "99-其它"
 				switch(cbSpecialInsert.getValue()) {
 					case "01-非特色":
 						specialCode = "01";
@@ -679,7 +660,7 @@ public class RollCallMaintainController extends Application {
 			SystemTime st = new SystemTime();
 			pstmt.setString(1, "UserKeyIn_" + st.getNowTime("yyyy-MM-dd HH:mm:ss"));
 			pstmt.setString(2, tfStudentNo.getText().trim());
-			pstmt.setString(3, dpChoiceRollCallDate.getValue() + " " + tfRollCallHH.getText().trim() + ":" + tfRollCallMM.getText().trim() + ":00");
+			pstmt.setString(3, dpChoiceRollCallDateInsert.getValue() + " " + tfRollCallHH.getText().trim() + ":" + tfRollCallMM.getText().trim() + ":00");
 			pstmt.setString(4, specialCode);
 			pstmt.setString(5, st.getNowTime("yyyyMMddHHmmssSSS"));
 			pstmt.setString(6, rcd.getName());
@@ -731,6 +712,198 @@ public class RollCallMaintainController extends Application {
 		}		
 
 	}	
+	
+	//修改點名資料
+	public void updateRollCallDetail() {
+		Integer hhTemp = null;
+		Integer mmTemp = null;
+
+		Alert alert = new Alert(Alert.AlertType.INFORMATION);
+		alert.setHeaderText("輸入錯誤");
+		
+		DBConnectionFactory dbf = new DBConnectionFactory();
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		//檢核ID是否有值
+		if (tfIDUpdate.getText().trim().length() == 0) {
+			alert.setContentText("未選擇要修改的資料");
+			alert.showAndWait();
+			return;			
+		} else {
+			//確認學員編號是否存在
+			String sqlChkStudent = "select * from Student where StudentNo = ?";
+			try {		
+				conn = dbf.getSQLiteCon("", "Club.dll");
+				pstmt = conn.prepareStatement(sqlChkStudent);
+				pstmt.clearParameters();
+				pstmt.setString(1, tfIDUpdate.getText().trim());
+				rs = pstmt.executeQuery();
+				if (!rs.next()) {
+					alert.setContentText("學員編號不存在");
+					alert.show();
+					return;										
+				}
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			} finally {
+				try {
+					rs.close();
+				} catch (Exception e) {
+					logger.info(e.getMessage(), e);
+				}
+				try {
+					pstmt.close();
+				} catch (Exception e) {
+					logger.info(e.getMessage(), e);
+				}	
+				try {
+					conn.close();
+				} catch (Exception e) {
+					logger.info(e.getMessage(), e);
+				}	
+			}
+		}
+
+		if (dpChoiceRollCallDateUpdate.getValue() == null) {		
+			alert.setContentText("未選擇點名日期");
+			alert.showAndWait();
+			return;		
+		}
+		
+		if (tfRollCallHHUpdate.getText().trim().length() == 0) {
+			alert.setContentText("未輸入小時(00-23)");
+			alert.showAndWait();
+			return;					
+		} else {
+			try {
+				hhTemp = Integer.parseInt(tfRollCallHHUpdate.getText().trim());
+				if ((hhTemp < 0) || (hhTemp > 23)) {					
+					alert.setContentText("輸入「小時」不正確 須為 00-23");
+					alert.showAndWait();
+					return;														
+				} else {
+					if (tfRollCallHHUpdate.getText().length() == 1) {
+						tfRollCallHHUpdate.setText("0" + tfRollCallHHUpdate.getText()); //若只輸入1碼，則前面補0
+					}
+				}
+			} catch (Exception e) {
+				alert.setContentText("輸入「小時」不正確 須為 00-23");
+				alert.showAndWait();
+				return;									
+			}
+		}
+		
+		if (tfRollCallMMUpdate.getText().trim().length() == 0) {
+			alert.setContentText("未輸入分鐘(01-59)");
+			alert.showAndWait();
+			return;					
+		} else {
+			try {
+				mmTemp = Integer.parseInt(tfRollCallMMUpdate.getText().trim());
+				if ((mmTemp < 0) || (mmTemp > 59)) {
+					alert.setContentText("輸入「分鐘」不正確 須為 00-59");
+					alert.showAndWait();
+					return;														
+				} else {
+					if (tfRollCallMMUpdate.getText().length() == 1) {
+						tfRollCallMMUpdate.setText("0" + tfRollCallMMUpdate.getText()); //若只輸入1碼，則前面補0
+					}
+				}
+			} catch (Exception e) {
+				alert.setContentText("輸入「分鐘」不正確 須為 00-59");
+				alert.showAndWait();
+				return;									
+			}			
+		}	
+
+		//檢核是否有異動資料
+		Boolean chkChange = false; //預設沒有異動
+		//先檢查日期部份是否有異動
+		if (!oldRCD.getRollCallTime().substring(0,10).equalsIgnoreCase(dpChoiceRollCallDateUpdate.getValue().toString())) {
+			chkChange = true;
+		}
+		if (!oldRCD.getRollCallTime().substring(11,13).equalsIgnoreCase(tfRollCallHHUpdate.getText())) {
+			chkChange = true;
+		}
+		if (!oldRCD.getRollCallTime().substring(14,16).equalsIgnoreCase(tfRollCallMMUpdate.getText())) {
+			chkChange = true;
+		}
+		String specialDesc = "";
+		String specialCode = "";
+		switch (cbSpecialUpdate.getValue()) {
+			case "01-非特色":
+				specialDesc = "非特色";
+				specialCode = "01";
+				break;
+			case "02-馬拉松":
+				specialDesc = "馬拉松";
+				specialCode = "02";
+				break;
+			case "03-基礎動作":
+				specialDesc = "基礎動作";
+				specialCode = "03";
+				break;
+			case "04-外師授課":
+				specialDesc = "外師授課";
+				specialCode = "04";
+				break;
+			case "99-其它":
+				specialDesc = "其它";
+				specialCode = "99";
+				break;
+		}
+		if (!oldRCD.getSpecial().equalsIgnoreCase(specialDesc)) {
+			chkChange = true;
+		}
+		if (!chkChange) {
+			alert.setContentText("資料無異動");
+			alert.showAndWait();
+			return;												
+		} else {
+			try {
+				//更新資料
+				String updateSQL = "UPDATE RollCallUploadDetail SET FileName = ?, RollCallTime = ?, Special = ?, UpdateTime = ? WHERE StudentNo = ? and RollCallTime = ? ";
+				conn = dbf.getSQLiteCon("", "Club.dll");
+				pstmt = conn.prepareStatement(updateSQL);
+				pstmt.clearParameters();
+				SystemTime st = new SystemTime();
+				pstmt.setString(1, "UserUpdate_" + st.getNowTime("yyyy-MM-dd HH:mm:ss"));
+				pstmt.setString(2, dpChoiceRollCallDateUpdate.getValue() + " " + tfRollCallHHUpdate.getText().trim() + ":" + tfRollCallMMUpdate.getText().trim() + ":00");
+				pstmt.setString(3, specialCode);
+				pstmt.setString(4, st.getNowTime("yyyyMMddHHmmssSSS"));
+				pstmt.setString(5, tfIDUpdate.getText());
+				pstmt.setString(6, oldRCD.getRollCallTime());
+				pstmt.executeUpdate();			
+
+				alert.setHeaderText("");
+				alert.setContentText("點名資料修改成功！");
+				alert.show();
+			
+				tfIDUpdate.setText("");
+				tfRollCallHHUpdate.setText("");
+				tfRollCallMMUpdate.setText("");
+				cbSpecialUpdate.setValue("01-非特色");
+				dpChoiceRollCallDateUpdate.setValue(LocalDate.now());
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			} finally {
+				try {
+					pstmt.close();
+				} catch (Exception e) {
+					logger.info(e.getMessage(), e);
+				}	
+				try {
+					conn.close();
+				} catch (Exception e) {
+					logger.info(e.getMessage(), e);
+				}	
+			}
+			//查詢點名資料
+			queryRollCallDetail(); 
+		}
+	}
 	
 	@Override
 	public void start(Stage arg0) throws Exception {
