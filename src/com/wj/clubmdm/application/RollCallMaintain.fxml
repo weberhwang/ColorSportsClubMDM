@@ -234,19 +234,24 @@
             <Font size="14.0" />
          </font>
       </Button>
-		<TableView fx:id="tvRollCallDetail" layoutX="58.0" layoutY="216.0" prefHeight="470.0" prefWidth="1097.0">
+		<TableView fx:id="tvRollCallDetail" layoutX="58.0" layoutY="216.0" prefHeight="425.0" prefWidth="1097.0">
 			<columns>
 				<TableColumn fx:id="colDelete" prefWidth="59.0" text="刪除" />
-				<TableColumn fx:id="colSeqNo" prefWidth="53.0" text="序號" />
-				<TableColumn fx:id="colRollCallTime" prefWidth="165.0" text="點名時間" />
-				<TableColumn fx:id="colStudentNo" text="學員編號" />
-				<TableColumn fx:id="colName" prefWidth="84.0" text="姓名" />
-				<TableColumn fx:id="colDepartment" prefWidth="74.0" text="上課分部" />
-				<TableColumn fx:id="colCourseKind" minWidth="0.0" prefWidth="64.0" text="類別" />
-				<TableColumn fx:id="colLevel" minWidth="0.0" prefWidth="62.0" text="程度" />
-				<TableColumn fx:id="colSpecial" prefWidth="104.0" text="特色課程" />
-            	<TableColumn fx:id="colMemberBelongDesc" prefWidth="293.0" text="成員所屬" />
+				<TableColumn fx:id="colSeqNo" prefWidth="84.0" text="序號" />
+				<TableColumn fx:id="colRollCallTime" prefWidth="176.0" text="點名時間" />
+				<TableColumn fx:id="colStudentNo" prefWidth="81.0" text="學員編號" />
+				<TableColumn fx:id="colName" prefWidth="96.0" text="姓名" />
+				<TableColumn fx:id="colDepartment" prefWidth="87.0" text="上課分部" />
+				<TableColumn fx:id="colCourseKind" minWidth="0.0" text="類別" />
+				<TableColumn fx:id="colLevel" minWidth="0.0" prefWidth="78.0" text="程度" />
+				<TableColumn fx:id="colSpecial" prefWidth="87.0" text="特色課程" />
+            	<TableColumn fx:id="colMemberBelongDesc" prefWidth="268.0" text="成員所屬" />
 			</columns>
 		</TableView>
+      <Button fx:id="btnOutputExcel" layoutX="59.0" layoutY="651.0" mnemonicParsing="false" onAction="#outputExcel" prefHeight="29.0" prefWidth="122.0" text="匯出查詢結果">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Button>
 	</children>
 </AnchorPane>

@@ -6,6 +6,10 @@
 
 package com.wj.clubmdm.application;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,6 +18,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import org.apache.log4j.Logger;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.wj.clubmdm.component.BtnDelRollCall;
 import com.wj.clubmdm.vo.RollCallDetail;
@@ -124,7 +135,8 @@ public class RollCallMaintainController extends Application {
 	private TableColumn<RollCallDetail, String> colMemberBelongDesc; //點名資料_成員所屬描述
 	@FXML
 	private TableColumn<RollCallDetail, BtnDelRollCall> colDelete; //點名資料_刪除按鈕
-	
+	@FXML
+	private Button btnOutputExcel; //產出Excel	
 	/*
 	 * 初始化
 	 */
@@ -378,7 +390,8 @@ public class RollCallMaintainController extends Application {
 			while (rs.next()) {
 				seqNo++;
 				rcd = new RollCallDetail();
-				rcd.setSeqNo(seqNo.toString());
+				//rcd.setSeqNo(seqNo.toString());
+				rcd.setSeqNo(String.format("%07d", seqNo));
 				rcd.setStudentNo(rs.getString("StudentNo"));
 				rcd.setName(rs.getString("Name"));
 				rcd.setDepartment(rs.getString("DepartmentDesc"));
@@ -904,6 +917,143 @@ public class RollCallMaintainController extends Application {
 			queryRollCallDetail(); 
 		}
 	}
+	
+	//產出Excel報表
+	public void outputExcel() {
+		Alert alert = new Alert(Alert.AlertType.INFORMATION);
+		SystemTime st = new SystemTime();
+		/*
+		 * 先檢查TableView裡面的筆數
+		 */
+		if (tvRollCallDetail.getItems() == null || tvRollCallDetail.getItems().size() <= 0) {
+			alert.setHeaderText("");
+			alert.setContentText("尚未查詢點名紀錄!");
+			alert.showAndWait();
+			return;			
+		}
+		
+		OutputStream fileOut = null;
+		String fileName = "../report/RollCall_" + st.getNowTime("yyyyMMddHHmmss") + ".xlsx";
+		
+		//檢查檔案是否存在，若存在先刪除
+		File file = new File(fileName);
+		if (file != null && file.exists()) {
+			file.delete();
+		}
+		
+		XSSFWorkbook wb = new XSSFWorkbook();
+		XSSFSheet sheet = wb.createSheet("點名資料");
+		sheet.setColumnWidth(0, 10*256); //序號
+		sheet.setColumnWidth(1, 23*256); //點名時間
+		sheet.setColumnWidth(2, 10*256); //學員編號
+		sheet.setColumnWidth(3, 12*256); //姓名
+		sheet.setColumnWidth(4, 10*256); //上課分部
+		sheet.setColumnWidth(5, 10*256); //類別
+		sheet.setColumnWidth(6, 10*256); //程度
+		sheet.setColumnWidth(7, 15*256); //特色課程
+		sheet.setColumnWidth(8, 35*256); //成員所屬
+		
+
+		//由wb物件取得可以設定樣式的XSSFCellStyle物件實例
+		XSSFCellStyle styleRow1 = (XSSFCellStyle) wb.createCellStyle();
+		//設定背景色
+		styleRow1.setFillForegroundColor(IndexedColors.PALE_BLUE.getIndex());
+		styleRow1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		
+		XSSFRow row; //列
+		XSSFCell cell; //行
+		int row1 = 0; //sheet1的列數
+		row = sheet.createRow(row1++);
+		cell = row.createCell(0);
+		cell.setCellStyle(styleRow1);
+		cell.setCellValue("序號");
+		cell = row.createCell(1);
+		cell.setCellStyle(styleRow1);
+		cell.setCellValue("點名時間");
+		cell = row.createCell(2);
+		cell.setCellStyle(styleRow1);
+		cell.setCellValue("學員編號");
+		cell = row.createCell(3);
+		cell.setCellStyle(styleRow1);
+		cell.setCellValue("姓名");
+		cell = row.createCell(4);
+		cell.setCellStyle(styleRow1);
+		cell.setCellValue("上課分部");
+		cell = row.createCell(5);
+		cell.setCellStyle(styleRow1);
+		cell.setCellValue("類別");
+		cell = row.createCell(6);
+		cell.setCellStyle(styleRow1);
+		cell.setCellValue("程度");
+		cell = row.createCell(7);
+		cell.setCellStyle(styleRow1);
+		cell.setCellValue("特色課程");
+		cell = row.createCell(8);
+		cell.setCellStyle(styleRow1);
+		cell.setCellValue("成員所屬");
+		
+		for (RollCallDetail rcd : tvRollCallDetail.getItems()) {
+			row = sheet.createRow(row1++);
+			cell = row.createCell(0);
+			cell.setCellValue(rcd.getSeqNo());
+			cell = row.createCell(1);
+			cell.setCellValue(rcd.getRollCallTime());
+			cell = row.createCell(2);
+			cell.setCellValue(rcd.getStudentNo());
+			cell = row.createCell(3);
+			cell.setCellValue(rcd.getName());
+			cell = row.createCell(4);
+			cell.setCellValue(rcd.getDepartment());
+			cell = row.createCell(5);
+			cell.setCellValue(rcd.getCourseKind());
+			cell = row.createCell(6);
+			cell.setCellValue(rcd.getLevel());
+			cell = row.createCell(7);
+			cell.setCellValue(rcd.getSpecial());
+			cell = row.createCell(8);
+			cell.setCellValue(rcd.getMemberBelongDesc());
+		}
+		
+		boolean errChk = false;
+		try {
+			fileOut = new FileOutputStream(fileName);			
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);
+			errChk = true;
+		}
+		try {
+			wb.write(fileOut);
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);
+			errChk = true;
+		}
+		try {
+			wb.close();
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);
+			errChk = true;
+		}
+		try {
+			fileOut.close();
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);
+			errChk = true;
+		}
+		if (!errChk) {
+			alert.setHeaderText("");
+			try {
+				alert.setContentText("產檔成功\r\n" + file.getCanonicalPath());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			alert.showAndWait();			
+		} else {
+			alert.setHeaderText("");
+			alert.setContentText("產檔失敗！");
+			alert.showAndWait();						
+		}
+	}
+	
 	
 	@Override
 	public void start(Stage arg0) throws Exception {

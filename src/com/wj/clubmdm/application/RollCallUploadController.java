@@ -434,7 +434,8 @@ public class RollCallUploadController extends Application {
 							insertMsg(s + " 資料重覆，自動排除(只保留1筆)。");
 						} else {
 							seqNo++;
-							rcd.setSeqNo(seqNo.toString());
+							//rcd.setSeqNo(seqNo.toString());
+							rcd.setSeqNo(String.format("%07d", seqNo));
 							rollCallDetails.put(rcd.getRollCallTime() + rcd.getStudentNo(), rcd);							
 						}
 					} else {
