@@ -513,7 +513,8 @@ public class RollCallUploadController extends Application {
 		}
 				
 		//第4個欄位為HH:MM:SS
-		if (arrayData[3].length() != 8) {
+		//if (arrayData[3].length() != 8) {
+		if (arrayData[3].length() <= 0) {
 			return null;
 		} else {
 			//把小時的部份改為24小時制
@@ -535,6 +536,8 @@ public class RollCallUploadController extends Application {
 				// 上午12:01:59，若轉成24小時制的話，是00:01:59，故只有在上午且小時為12時，要改小時為0
 				if (arrayData[2].equalsIgnoreCase("上午") && hour == 12) {
 					hour = 0;
+				} else if (arrayData[2].equalsIgnoreCase("下午") && hour < 12) {
+					hour += 12;
 				}	
 				
 				if (hour.toString().length() < 2) {
