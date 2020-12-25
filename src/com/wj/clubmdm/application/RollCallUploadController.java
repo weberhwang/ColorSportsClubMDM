@@ -67,7 +67,7 @@ public class RollCallUploadController extends Application {
 	//暫存讀取時的點名檔絕對路徑
 	private String fromPath = null;
 	//備份時點名檔的目錄名稱
-	private String backupFolder = "backup";
+	private String backupFolder = "Backup/RollCallUpload";
 	//暫存選擇的點名日期
 	private String rollCallDate = "";
 	
@@ -704,6 +704,12 @@ public class RollCallUploadController extends Application {
 		SystemTime st = new SystemTime();
 		String backupFileName = "color_rollcall_" + rollCallDate + "_" + st.getNowTime("yyyyMMddHHmmss") + ".tsv";
 	    String backupPath = backupFolder + "/" + backupFileName;
+	    
+	    //確認目錄是否存在
+	    File folder = new File(backupFolder);
+	    if (!folder.exists()) {
+	    	folder.mkdirs();
+	    }
 
 	    //複製檔案
 	    try {

@@ -64,8 +64,8 @@
       </TableView>
       <TableView fx:id="tvMsg" layoutX="620.0" layoutY="448.0" prefHeight="216.0" prefWidth="538.0">
          <columns>
-            <TableColumn fx:id="colMsgTime" prefWidth="205.0" text="訊息時間" />
             <TableColumn fx:id="colMsgContent" prefWidth="572.0" text="訊息內容" />
+            <TableColumn fx:id="colMsgTime" prefWidth="205.0" text="訊息時間" />
          </columns>
       </TableView>
    </children>
