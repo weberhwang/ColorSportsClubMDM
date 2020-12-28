@@ -14,6 +14,8 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
+import com.wj.clubmdm.function.CalculateStudyAge;
+
 import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
@@ -22,14 +24,18 @@ import javafx.fxml.FXMLLoader;
 
 import rhinoceros.util.db.DBConnectionFactory;
 import rhinoceros.util.qrcode.QRCodeUtils;
-import rhinoceros.util.url.DownloadFile;
 
 public class Login extends Application {
 	private Logger logger = Logger.getLogger(Login.class);
 	@Override
 	public void start(Stage primaryStage) {
 		try {
+			//QRCode預產出
 			preGetQRCode();
+			//重新計算學員目前的學齡
+			CalculateStudyAge csa = new CalculateStudyAge();
+			csa.run();
+			
 			AnchorPane root = (AnchorPane)FXMLLoader.load(getClass().getResource("Login.fxml"));
 			Scene scene = new Scene(root,1200,730);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
