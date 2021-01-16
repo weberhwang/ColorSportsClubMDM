@@ -63,7 +63,8 @@ public class LoginController extends Application {
 		}
 		logo.setImage(image);
 		
-		chkMotherBoardSN(); //檢核是否為註冊電腦
+		//20201124 Weber 由於Windows筆電有些無法正常取出主機板序號，未找到解決方法前，暫不檢查註冊資訊。
+		//chkMotherBoardSN(); //檢核是否為註冊電腦
 	}
 
 	/*
@@ -141,7 +142,7 @@ public class LoginController extends Application {
 		try {
 			loader = new FXMLLoader(getClass().getResource("Register.fxml"));			
 			root = (AnchorPane)loader.load();
-			scene = new Scene(root, 1210, 710);
+			scene = new Scene(root, 1210, 730);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setTitle("COLOR SPORTS CLUB MDM_V1.0");
 			primaryStage.setScene(scene);
@@ -159,10 +160,13 @@ public class LoginController extends Application {
 	public void chkAccount() {
 		boolean chklogin = false; //預設登入失敗
 		
+		//20201124 Weber 由於Windows筆電有些無法正常取出主機板序號，未找到解決方法前，暫不檢查註冊資訊。
+		/*
 		if (!chkMotherBoardSN()) {			
 			labelMsg.setText("此電腦非合法註冊者，無法使用本軟體，請註冊！");
 			return;
 		}
+		*/
 		
 		if (tfAccount.getText().trim().length() <= 0) {
 			labelMsg.setText("請輸入帳號！");
@@ -220,7 +224,7 @@ public class LoginController extends Application {
 			Scene scene = null;
 			try {
 				root = (AnchorPane) FXMLLoader.load(getClass().getResource("PageRoot.fxml"));
-				scene = new Scene(root, 1200, 730);
+				scene = new Scene(root, 1210, 730);
 				scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 				primaryStage.setTitle("COLOR SPORTS CLUB MDM_V1.0");
 				primaryStage.setScene(scene);
@@ -291,7 +295,7 @@ public class LoginController extends Application {
 		try {
 			loader = new FXMLLoader(getClass().getResource("ChangePWD.fxml"));			
 			root = (AnchorPane)loader.load();
-			scene = new Scene(root, 1210, 710);
+			scene = new Scene(root, 1210, 730);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 		    ChangePWDController controller = loader.getController();
 	        controller.setQuestion(question);

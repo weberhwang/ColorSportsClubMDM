@@ -12,14 +12,17 @@ import com.wj.clubmdm.component.ChoiceBoxSpecial;
 public class RollCallUploadDetail {
 	private String seqNo; //序號
 	private String studentNo; //學員編號
-	private String name; //姓名
-	private String department; //上課分部
-	private String courseKind; //課程類別 
-	private String level; //程度
 	private String rollCallTime; //點名時間
-	private String special; //特色課程
-	private ChoiceBoxSpecial cbSpecial; //特色課程(下拉選單)
-	private ChoiceBoxImport cbImport; //是否匯入(下拉選單)
+	private String name; //姓名
+	private String department; //上課分部(代號)
+	private String courseKind; //課程類別(代號) 
+	private String level; //程度(代號)
+	private String memberBelong; //成員所屬(代號)
+	private String departmentDesc; //上課分部(中文)
+	private String courseKindDesc; //課程類別(中文) 
+	private String levelDesc; //程度(中文)	
+	private ChoiceBoxSpecial cbSpecial; //特色課程(下拉選單 代號-中文)
+	private ChoiceBoxImport cbImport; //是否匯入(下拉選單 Y/N)
 	
 	public String getSeqNo() {
 		return seqNo;
@@ -63,12 +66,6 @@ public class RollCallUploadDetail {
 	public void setRollCallTime(String rollCallTime) {
 		this.rollCallTime = rollCallTime;
 	}
-	public String getSpecial() {
-		return special;
-	}
-	public void setSpecial(String special) {
-		this.special = special;
-	}
 	public ChoiceBoxSpecial getCbSpecial() {
 		return cbSpecial;
 	}
@@ -81,4 +78,28 @@ public class RollCallUploadDetail {
 	public void setCbImport(ChoiceBoxImport cbImport) {
 		this.cbImport = cbImport;
 	}
+	public String getDepartmentDesc() {
+		return departmentDesc;
+	}
+	public void setDepartmentDesc(String departmentDesc) {
+		this.departmentDesc = departmentDesc;
+	}
+	public String getCourseKindDesc() {
+		return courseKindDesc;
+	}
+	public void setCourseKindDesc(String courseKindDesc) {
+		this.courseKindDesc = courseKindDesc;
+	}
+	public String getLevelDesc() {
+		return levelDesc;
+	}
+	public void setLevelDesc(String levelDesc) {
+		this.levelDesc = levelDesc;
+	}
+	public String getMemberBelong() {
+		return memberBelong;
+	}
+	public void setMemberBelong(String memberBelong) {
+		this.memberBelong = memberBelong;
+	}	
 }

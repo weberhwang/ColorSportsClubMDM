@@ -10,7 +10,6 @@ package com.wj.clubmdm.application;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 
 import javafx.application.Application;
 import javafx.fxml.FXML;

@@ -6,7 +6,15 @@
 
 package com.wj.clubmdm.application;
 	
+import java.awt.image.BufferedImage;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+
 import org.apache.log4j.Logger;
+
+import com.wj.clubmdm.function.CalculateStudyAge;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -14,13 +22,22 @@ import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.fxml.FXMLLoader;
 
+import rhinoceros.util.db.DBConnectionFactory;
+import rhinoceros.util.qrcode.QRCodeUtils;
+
 public class Login extends Application {
 	private Logger logger = Logger.getLogger(Login.class);
 	@Override
 	public void start(Stage primaryStage) {
 		try {
+			//QRCode預產出
+			preGetQRCode();
+			//重新計算學員目前的學齡
+			CalculateStudyAge csa = new CalculateStudyAge();
+			csa.run();
+			
 			AnchorPane root = (AnchorPane)FXMLLoader.load(getClass().getResource("Login.fxml"));
-			Scene scene = new Scene(root,1200,700);
+			Scene scene = new Scene(root,1200,730);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setTitle("COLOR SPORTS CLUB MDM_V1.0");
 			primaryStage.setScene(scene);
@@ -29,6 +46,80 @@ public class Login extends Application {
 		} catch(Exception e) {
 			logger.info(e.getMessage(), e);
 		}
+	}
+	
+	/*
+	 * 預先抓取學員QRCode並存至Local端
+	 * 只會針對不存在的檔案下載
+	 */
+	private void preGetQRCode() {
+		//先將學員編號取出暫存至alStudentNo
+		DBConnectionFactory dbf = new DBConnectionFactory();
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		ArrayList<String> alStudentNo = new ArrayList<String>();
+		try {		
+			conn = dbf.getSQLiteCon("", "Club.dll");
+			pstmt = conn.prepareStatement("select StudentNo from Student");
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				alStudentNo.add(rs.getString("StudentNo"));
+			}	
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);
+		} finally {
+			try {
+				rs.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+			try {
+				conn.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+		}	
+		
+		/*
+		 * 下面的作法是至Google雲端取QRCode的作法，不支援中間壓入logo的方式 
+		 */
+		//DownloadFile df = new DownloadFile();
+		//for (String no: alStudentNo) {
+	    //	df.download("https://chart.apis.google.com/chart?cht=qr&chs=200x200&chl=" + no, "backup/QRCode/", no + ".png");
+		//}
+		
+		//不連線雲端，由Local端產出QRCode的作法(支援logo圖檔)
+		for (String no: alStudentNo) {
+			int width = 200; //二維碼寬度
+			int height = 200; //二維碼高度
+			int margin = 0; //二維碼邊距
+			String logoPath = "image/logo.png";
+			int logoSizeMultiple = 3; //二維碼與LOGO的大小比例
+			String filePath = "Backup/QRCode"; //指定生成圖片文件的保存路徑
+
+			try {
+				// 生成二維碼
+				BufferedImage qrcode = QRCodeUtils.createQRCode(no, width, height, margin);
+				// 添加LOGO
+				qrcode = QRCodeUtils.createQRCodeWithLogo(qrcode, width, height, logoPath, logoSizeMultiple);
+				/*
+				 * 導出指定路徑
+				 * 參數1：QRCode物件
+				 * 參數2：產出目錄
+				 * 參數3：產出的檔名
+				 * 參數4：產出的副檔名
+				 */
+				QRCodeUtils.generateQRCodeToPath(qrcode, filePath, no, "png");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}			
+		}		
 	}
 	
 	public static void main(String[] args) {

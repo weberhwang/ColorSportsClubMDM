@@ -67,7 +67,7 @@ public class RollCallUploadController extends Application {
 	//暫存讀取時的點名檔絕對路徑
 	private String fromPath = null;
 	//備份時點名檔的目錄名稱
-	private String backupFolder = "backup";
+	private String backupFolder = "Backup/RollCallUpload";
 	//暫存選擇的點名日期
 	private String rollCallDate = "";
 	
@@ -109,6 +109,8 @@ public class RollCallUploadController extends Application {
 	@FXML
 	private TableColumn<RollCallUploadBatch, String> colBatchRollCreateTime; //點名批次_匯入時間
 	@FXML
+	private TableColumn<RollCallUploadBatch, String> colBatchRollFileName; //點名批次_檔名	
+	@FXML
 	private TableColumn<RollCallUploadBatch, BtnDelRollCallUpload> colBatchDel; //點名批次_刪除
 	@FXML
 	private TableView<Message> tvMsg; //訊息TableView
@@ -125,9 +127,9 @@ public class RollCallUploadController extends Application {
 		colSeqNo.setCellValueFactory(new PropertyValueFactory<>("seqNo"));
 		colStudentNo.setCellValueFactory(new PropertyValueFactory<>("studentNo"));
 		colName.setCellValueFactory(new PropertyValueFactory<>("name"));
-		colDepartment.setCellValueFactory(new PropertyValueFactory<>("department"));
-		colCourseKind.setCellValueFactory(new PropertyValueFactory<>("courseKind"));
-		colLevel.setCellValueFactory(new PropertyValueFactory<>("level"));
+		colDepartment.setCellValueFactory(new PropertyValueFactory<>("departmentDesc"));
+		colCourseKind.setCellValueFactory(new PropertyValueFactory<>("courseKindDesc"));
+		colLevel.setCellValueFactory(new PropertyValueFactory<>("levelDesc"));
 		colRollCallDate.setCellValueFactory(new PropertyValueFactory<>("rollCallTime"));
 		colRollSpecial.setCellValueFactory(new PropertyValueFactory<>("cbSpecial"));
 		//colRollSpecial.setCellValueFactory(new PropertyValueFactory<>("special"));
@@ -136,6 +138,7 @@ public class RollCallUploadController extends Application {
 		//建立上傳批次TableView資料連結
 		colBatchRollCallDate.setCellValueFactory(new PropertyValueFactory<>("rollCallDate"));
 		colBatchRollCreateTime.setCellValueFactory(new PropertyValueFactory<>("createTime"));
+		colBatchRollFileName.setCellValueFactory(new PropertyValueFactory<>("fileName"));
 		colBatchDel.setCellValueFactory(new PropertyValueFactory<>("btnDelBatch"));
 		
 		//建立訊息TableView資料連結
@@ -192,9 +195,9 @@ public class RollCallUploadController extends Application {
 		tvRollCallBatch.getItems().clear(); //清除點名批次TableView
 		String sql = 
 				"SELECT " +
-			    "   FileName," +
-		        "   RollCallDate," +
-				"	CreateTime " + 
+			    "  FileName," +
+		        "  RollCallDate," +
+				"  CreateTime " + 
 				"FROM " + 
 				"  RollCallUploadBatch " + 
 				"ORDER BY CreateTime DESC";
@@ -327,6 +330,49 @@ public class RollCallUploadController extends Application {
 	}
 	
 	/*
+	 * 檢查RollCallUploadBatch中有幾筆該點名日期的批次
+	 * param yyyymmdd 點名日期(西元年月日)
+	 * return 筆數
+	 */
+	private Integer checkRollCallUploadBatch(String yyyymmdd) {
+		String sql = "SELECT count(*) cnt from RollCallUploadBatch where RollCallDate = ?";
+		DBConnectionFactory dbf = new DBConnectionFactory();
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		Integer count = 0; //用來記錄RollCallUploadBatch Table中有幾筆該點名日的批次
+		try {	
+			conn = dbf.getSQLiteCon("", "Club.dll");
+			pstmt = conn.prepareStatement(sql);
+			pstmt.clearParameters();
+			pstmt.setString(1, yyyymmdd);
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				count = rs.getInt("cnt");
+			}
+		} catch (Exception e) {
+			logger.info(e.getMessage(), e);
+		} finally {
+			try {
+				rs.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+			try {
+				conn.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+		}	
+		return count;
+	}
+	
+	/*
 	 * 將TSV檔案吃入
 	 */
 	public void checkRollCallFile() {
@@ -346,7 +392,14 @@ public class RollCallUploadController extends Application {
 		fromPath = tfFilePath.getText().trim(); 
 		
 		//暫存所選擇的日期，轉成yyyyMMdd這個格式
-		rollCallDate = dpChoiceRollCallDate.getValue().toString().replace("-", "");		
+		rollCallDate = dpChoiceRollCallDate.getValue().toString().replace("-", "");	
+		
+		//檢核RollCallUploadBatch裡面是否已有該點名日期上傳的記錄，若有的話，不允許上去
+		if (checkRollCallUploadBatch(rollCallDate) > 0) {
+			insertMsg("該日已有上傳過點名檔，");
+			insertMsg("如要重新上傳，請先刪除該批點名資料！");
+			return;
+		}
 		
 		//建立用來存TSV檔裡面內容的暫存變數
 		ArrayList<String> data = null; 
@@ -381,7 +434,8 @@ public class RollCallUploadController extends Application {
 							insertMsg(s + " 資料重覆，自動排除(只保留1筆)。");
 						} else {
 							seqNo++;
-							rcd.setSeqNo(seqNo.toString());
+							//rcd.setSeqNo(seqNo.toString());
+							rcd.setSeqNo(String.format("%07d", seqNo));
 							rollCallDetails.put(rcd.getRollCallTime() + rcd.getStudentNo(), rcd);							
 						}
 					} else {
@@ -459,7 +513,8 @@ public class RollCallUploadController extends Application {
 		}
 				
 		//第4個欄位為HH:MM:SS
-		if (arrayData[3].length() != 8) {
+		//if (arrayData[3].length() != 8) {
+		if (arrayData[3].length() <= 0) {
 			return null;
 		} else {
 			//把小時的部份改為24小時制
@@ -481,6 +536,8 @@ public class RollCallUploadController extends Application {
 				// 上午12:01:59，若轉成24小時制的話，是00:01:59，故只有在上午且小時為12時，要改小時為0
 				if (arrayData[2].equalsIgnoreCase("上午") && hour == 12) {
 					hour = 0;
+				} else if (arrayData[2].equalsIgnoreCase("下午") && hour < 12) {
+					hour += 12;
 				}	
 				
 				if (hour.toString().length() < 2) {
@@ -497,23 +554,26 @@ public class RollCallUploadController extends Application {
 		
 		//若資料的點名日期與上方選擇的匯入日不符合時，則不列入TableView中
 		if (!arrayData[1].equalsIgnoreCase(dpChoiceRollCallDate.getValue().toString())) {
-			insertMsg(rawData + "資料 點名日期 不符，已忽略。");
+			insertMsg(rawData + " 資料 點名日期 不符，已忽略。");
 			return null;
 		}
 		
 		//到這邊代表時間格式正確，將其組成 yyyy-mm-dd hh(24小時制):mm:ss
 		rcd.setRollCallTime(arrayData[1] + " " + arrayData[3]);
-		//★(可能要刪)先預設特色課程為N
-		rcd.setSpecial("N");
+
 		//取得學員相關資料		
 		//ifnull用法：ifnull(Note,'') 當Note為null時，以空白取代
 		String sql = 
 				"SELECT " +
-		        "   f.StudentNo," +
-				"	f.Name," + 
-				"	(select d.desc from Student s left join CodeDetail d on s.Department = d.DetailCode and d.MainCode = '004') DepartmentDesc," + 
-				"	(select d.desc from Student s left join CodeDetail d on s.CourseKind = d.DetailCode and d.MainCode = '005') CourseKindDesc," + 
-				"	(select d.desc from Student s left join CodeDetail d on s.Level = d.DetailCode and d.MainCode = '002') LevelDesc " +				
+		        "  f.StudentNo," +
+				"  f.Name," + 
+				"  (select d.desc from Student s left join CodeDetail d on s.Department = d.DetailCode and d.MainCode = '004') DepartmentDesc," + 
+				"  (select d.desc from Student s left join CodeDetail d on s.CourseKind = d.DetailCode and d.MainCode = '005') CourseKindDesc," + 
+				"  (select d.desc from Student s left join CodeDetail d on s.Level = d.DetailCode and d.MainCode = '002') LevelDesc, " +
+				"  f.Department," +
+				"  f.CourseKind," +
+				"  f.Level, " +
+				"  f.MemberBelong " +
 				"FROM " + 
 				"  Student f " + 
 				"WHERE " + 
@@ -526,7 +586,7 @@ public class RollCallUploadController extends Application {
 		try {
 			ChoiceBoxSpecial cbSpecial = null;
 			//建立 特色課程 下拉選單的清單內容，此下拉選單為「特色課程」欄位，只有N/Y兩個值
-			ObservableList<String> specialItems = FXCollections.observableArrayList("N", "Y");			
+			ObservableList<String> specialItems = FXCollections.observableArrayList("01-非特色", "02-馬拉松", "03-基礎動作", "04-外師授課", "05-其它");	
 
 			ChoiceBoxImport cbImport = null;
 			//建立 是否匯入 下拉選單的清單內容，此下拉選單為「是否匯入」欄位，只有N/Y兩個值
@@ -541,17 +601,22 @@ public class RollCallUploadController extends Application {
 				count++;
 				rcd.setStudentNo(rs.getString("StudentNo"));
 				rcd.setName(rs.getString("Name"));
-				rcd.setDepartment(rs.getString("DepartmentDesc"));
-				rcd.setCourseKind(rs.getString("CourseKindDesc"));
-				rcd.setLevel(rs.getString("LevelDesc"));
+				rcd.setDepartment(rs.getString("Department"));
+				rcd.setCourseKind(rs.getString("CourseKind"));
+				rcd.setLevel(rs.getString("Level"));
+				rcd.setMemberBelong(rs.getString("MemberBelong"));
+				rcd.setDepartmentDesc(rs.getString("DepartmentDesc"));
+				rcd.setCourseKindDesc(rs.getString("CourseKindDesc"));
+				rcd.setLevelDesc(rs.getString("LevelDesc"));
 				
-				//建立特色課程的下拉選單(預設N)
+				//建立特色課程的下拉選單(預設 01-非特色)
 				cbSpecial = new ChoiceBoxSpecial();
 				cbSpecial.autosize();
 				cbSpecial.setItems(specialItems);
 				cbSpecial.setRollCallTime(rcd.getRollCallTime());
 				cbSpecial.setStudentNo(rcd.getStudentNo());
-				cbSpecial.getSelectionModel().select("N"); //把N當成預設值
+				cbSpecial.getSelectionModel().select("01-非特色"); //把「非特色」當成預設值
+				rcd.setCbSpecial(cbSpecial); //把特色課程的下拉選單加給RollCallDetail物件，當作屬性
 
 				//建立是否匯入的下拉選單(預設y)
 				cbImport = new ChoiceBoxImport();
@@ -559,20 +624,13 @@ public class RollCallUploadController extends Application {
 				cbImport.setItems(importItems);
 				cbImport.setRollCallTime(rcd.getRollCallTime());
 				cbImport.setStudentNo(rcd.getStudentNo());
-				cbImport.getSelectionModel().select("Y"); //把N當成預設值
-				
-				rcd.setCbSpecial(cbSpecial); //把特色課程的下拉選單加給RollCallDetail物件，當作屬性
+				cbImport.getSelectionModel().select("Y"); //把N當成預設值				
 				rcd.setCbImport(cbImport); //把匯入的下拉選單加給RollCallDetail物件，當作屬性
 			}
 			//若沒有找到資料時
 			if (count <= 0) {
-				rcd.setStudentNo(rs.getString("無學員資料"));
-				rcd.setName(rs.getString(""));
-				rcd.setDepartment(rs.getString(""));
-				rcd.setCourseKind(rs.getString(""));
-				rcd.setLevel(rs.getString(""));				
-				rcd.setCbSpecial(cbSpecial); //把特色課程的下拉選單加給RollCallDetail物件，當作屬性
-				rcd.setCbImport(cbImport); //把匯入的下拉選單加給RollCallDetail物件，當作屬性
+				insertMsg(rawData + " 查無該學員資料，請先建立學員資料再重新匯入！");
+				return null;
 			}
 		} catch (Exception e) {
 			logger.info(e.getMessage(), e);
@@ -646,6 +704,12 @@ public class RollCallUploadController extends Application {
 		SystemTime st = new SystemTime();
 		String backupFileName = "color_rollcall_" + rollCallDate + "_" + st.getNowTime("yyyyMMddHHmmss") + ".tsv";
 	    String backupPath = backupFolder + "/" + backupFileName;
+	    
+	    //確認目錄是否存在
+	    File folder = new File(backupFolder);
+	    if (!folder.exists()) {
+	    	folder.mkdirs();
+	    }
 
 	    //複製檔案
 	    try {
@@ -687,7 +751,7 @@ public class RollCallUploadController extends Application {
 	    
 		//取得TableView各列資料並寫入資料庫
 		String insertSystemTime = st.getNowTime("yyyyMMddHHmmssSSS");
-		String sqlInsertDetail = "insert into RollCallUploadDetail values(?, ?, ?, ?, ?, null)";
+		String sqlInsertDetail = "insert into RollCallUploadDetail values(?, ?, ?, ?, ?, null, ?, ?, ?, ?, ?)";
 		ObservableList<RollCallUploadDetail> rcds = tvRollCallDetail.getItems();
 		try {
 			conn = dbcf.getSQLiteCon("", "Club.dll");
@@ -703,8 +767,13 @@ public class RollCallUploadController extends Application {
 					pstmt.setString(1, backupFileName);
 					pstmt.setString(2, data.getStudentNo());
 					pstmt.setString(3, data.getRollCallTime());
-					pstmt.setString(4, data.getCbSpecial().getValue());
+					pstmt.setString(4, data.getCbSpecial().getValue().substring(0, 2));
 					pstmt.setString(5, insertSystemTime);
+					pstmt.setString(6, data.getName());
+					pstmt.setString(7, data.getLevel());
+					pstmt.setString(8, data.getMemberBelong());
+					pstmt.setString(9, data.getDepartment());
+					pstmt.setString(10, data.getCourseKind());
 					pstmt.executeUpdate();
 				}
 			} catch (Exception e) {
@@ -729,6 +798,8 @@ public class RollCallUploadController extends Application {
 		tvRollCallDetail.getItems().clear();
 		//清除暫存變數TreeMap
 		rollCallDetails.clear();
+		//寫入後，重新秀批次匯入歷程
+		queryUploadBatch();
 		
 	}
 	

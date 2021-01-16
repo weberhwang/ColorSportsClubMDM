@@ -1,13 +1,257 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.shape.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.text.*?>
 <?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.collections.*?>
 
 <AnchorPane prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.wj.clubmdm.application.RollCallMaintainController">
-   <children>
-   </children>
+	<children>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#d3ebcb" height="89.0" layoutX="58.0" layoutY="14.0" stroke="BLACK" strokeType="INSIDE" width="1097.0" />
+		<Label layoutX="70.0" layoutY="30.0" text="點名日期區間">
+			<font>
+				<Font name="System Bold" size="16.0" />
+			</font>
+		</Label>
+		<DatePicker fx:id="dpChoiceRollCallDateBegin" layoutX="174.0" layoutY="26.0" prefHeight="30.0" prefWidth="140.0" />
+		<Label layoutX="322.0" layoutY="27.0" text="~">
+			<font>
+				<Font name="System Bold" size="16.0" />
+			</font>
+		</Label>
+		<DatePicker fx:id="dpChoiceRollCallDateEnd" layoutX="344.0" layoutY="26.0" prefHeight="30.0" prefWidth="140.0" />
+		<Label layoutX="501.0" layoutY="30.0" text="特色課程">
+			<font>
+				<Font name="System Bold" size="16.0" />
+			</font>
+		</Label>
+		<ChoiceBox fx:id="cbSpecial" layoutX="574.0" layoutY="23.0" prefHeight="30.0" prefWidth="96.0" value="全部">
+			<items>
+				<FXCollections fx:factory="observableArrayList">
+					<String fx:value="全部" />
+					<String fx:value="非特色" />
+					<String fx:value="基礎動作" />
+					<String fx:value="外師授課" />
+					<String fx:value="其它" />
+				</FXCollections>
+			</items>
+		</ChoiceBox>
+		<Label layoutX="681.0" layoutY="30.0" text="程度">
+			<font>
+				<Font name="System Bold" size="16.0" />
+			</font>
+		</Label>
+		<ChoiceBox fx:id="cbLevel" layoutX="724.0" layoutY="23.0" prefHeight="29.0" prefWidth="64.0" value="全部">
+			<items>
+				<FXCollections fx:factory="observableArrayList">
+					<String fx:value="全部" />
+					<String fx:value="初級" />
+					<String fx:value="中級" />
+					<String fx:value="高級" />
+					<String fx:value="C組" />
+					<String fx:value="B組" />
+					<String fx:value="A組" />
+				</FXCollections>
+			</items>			
+		</ChoiceBox>
+		<ChoiceBox fx:id="cbID" layoutX="70.0" layoutY="62.0" prefHeight="30.0" prefWidth="96.0" value="學員編號">
+			<items>
+				<FXCollections fx:factory="observableArrayList">
+					<String fx:value="學員編號" />
+					<String fx:value="身份證字號" />
+					<String fx:value="姓名" />
+				</FXCollections>
+			</items>
+		</ChoiceBox>
+		<TextField fx:id="tfIDValue" layoutX="174.0" layoutY="63.0" prefHeight="29.0" prefWidth="140.0" />
+		<Label layoutX="799.0" layoutY="29.0" text="上課分部">
+			<font>
+				<Font name="System Bold" size="16.0" />
+			</font>
+		</Label>
+		<ChoiceBox fx:id="cbDepartment" layoutX="872.0" layoutY="25.0" prefHeight="29.0" prefWidth="64.0" value="全部">
+			<items>
+				<FXCollections fx:factory="observableArrayList">
+					<String fx:value="全部" />
+					<String fx:value="仁愛" />
+					<String fx:value="陽光" />
+					<String fx:value="隨選" />
+				</FXCollections>
+			</items>
+		</ChoiceBox>
+		<Label layoutX="947.0" layoutY="29.0" text="課程類別">
+			<font>
+				<Font name="System Bold" size="16.0" />
+			</font>
+		</Label>
+		<ChoiceBox fx:id="cbCourseKind" layoutX="1022.0" layoutY="25.0" prefHeight="29.0" prefWidth="64.0" value="全部">
+			<items>
+				<FXCollections fx:factory="observableArrayList">
+					<String fx:value="全部" />
+					<String fx:value="花式" />
+					<String fx:value="競速" />
+					<String fx:value="雙棲" />
+				</FXCollections>
+			</items>
+		</ChoiceBox>		
+		<Label layoutX="502.0" layoutY="67.0" text="成員所屬">
+			<font>
+				<Font name="System Bold" size="16.0" />
+			</font>
+		</Label>
+      <CheckBox fx:id="ckbMemberBelong1" layoutX="639.0" layoutY="69.0" mnemonicParsing="false" text="冬夏令營">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </CheckBox>
+      <CheckBox fx:id="ckbMemberBelong2" layoutX="731.0" layoutY="69.0" mnemonicParsing="false" text="學校社團">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </CheckBox>
+      <CheckBox fx:id="ckbMemberBelong3" layoutX="823.0" layoutY="69.0" mnemonicParsing="false" text="俱樂部">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </CheckBox>
+      <CheckBox fx:id="ckbMemberBelongAll" layoutX="575.0" layoutY="69.0" mnemonicParsing="false" text="不限">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </CheckBox>
+		<Button fx:id="btnQueryRollCallData" layoutX="1086.0" layoutY="64.0" mnemonicParsing="false" onAction="#queryRollCallDetail" prefHeight="29.0" prefWidth="58.0" text="查詢">
+			<font>
+				<Font size="14.0" />
+			</font>
+		</Button>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#d2eaf8" height="50.0" layoutX="58.0" layoutY="107.0" stroke="BLACK" strokeType="INSIDE" width="1097.0" />
+      <Label layoutX="70.0" layoutY="121.0" text="學員編號">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Label>
+      <TextField fx:id="tfStudentNo" layoutX="143.0" layoutY="117.0" prefHeight="30.0" prefWidth="130.0" />
+      <Label layoutX="288.0" layoutY="121.0" text="點名日期">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Label>
+      <DatePicker fx:id="dpChoiceRollCallDateInsert" layoutX="361.0" layoutY="117.0" prefHeight="23.0" prefWidth="140.0" />
+      <Label layoutX="517.0" layoutY="121.0" text="點名時間">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Label>
+      <Label layoutX="637.0" layoutY="121.0" text="時">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Label>
+      <TextField fx:id="tfRollCallHH" layoutX="590.0" layoutY="117.0" prefHeight="30.0" prefWidth="42.0" promptText="14" />
+      <Label layoutX="714.0" layoutY="121.0" text="分">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Label>
+      <TextField fx:id="tfRollCallMM" layoutX="667.0" layoutY="117.0" prefHeight="30.0" prefWidth="42.0" promptText="59" />
+      <Label layoutX="743.0" layoutY="121.0" text="特色課程">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Label>
+      <ChoiceBox fx:id="cbSpecialInsert" layoutX="817.0" layoutY="117.0" prefHeight="30.0" prefWidth="140.0" value="全部">
+         <items>
+            <FXCollections fx:factory="observableArrayList">
+               <String fx:value="非特色" />
+               <String fx:value="基礎動作" />
+               <String fx:value="外師授課" />
+               <String fx:value="其它" />
+            </FXCollections>
+         </items>
+      </ChoiceBox>
+		<Button fx:id="btnInsertRollCallData" layoutX="1086.0" layoutY="118.0" mnemonicParsing="false" onAction="#insertRollCallDetail" prefHeight="29.0" prefWidth="58.0" text="新增">
+			<font>
+				<Font size="14.0" />
+			</font>
+		</Button>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#ffe3ef" height="50.0" layoutX="58.0" layoutY="161.0" stroke="BLACK" strokeType="INSIDE" width="1097.0" />
+      <Label layoutX="70.0" layoutY="175.0" text="學員編號">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Label>
+      <Label fx:id="tfIDUpdate" layoutX="144.0" layoutY="174.0" prefHeight="20.0" prefWidth="130.0" textFill="BLUE">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <Label layoutX="288.0" layoutY="175.0" text="點名日期">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Label>
+      <DatePicker fx:id="dpChoiceRollCallDateUpdate" layoutX="361.0" layoutY="171.0" prefHeight="23.0" prefWidth="140.0" />
+      <Label layoutX="517.0" layoutY="175.0" text="點名時間">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Label>
+      <TextField fx:id="tfRollCallHHUpdate" layoutX="590.0" layoutY="171.0" prefHeight="30.0" prefWidth="42.0" promptText="14" />
+      <Label layoutX="637.0" layoutY="175.0" text="時">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Label>
+      <TextField fx:id="tfRollCallMMUpdate" layoutX="667.0" layoutY="171.0" prefHeight="30.0" prefWidth="42.0" promptText="59" />
+      <Label layoutX="714.0" layoutY="175.0" text="分">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Label>
+      <Label layoutX="743.0" layoutY="175.0" text="特色課程">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Label>
+      <ChoiceBox fx:id="cbSpecialUpdate" layoutX="817.0" layoutY="171.0" prefHeight="30.0" prefWidth="140.0" value="全部">
+         <items>
+            <FXCollections fx:factory="observableArrayList">
+               <String fx:value="非特色" />
+               <String fx:value="基礎動作" />
+               <String fx:value="外師授課" />
+               <String fx:value="其它" />
+            </FXCollections>
+         </items>
+      </ChoiceBox>
+      <TextField fx:id="tfRollCallSSUpdate" layoutX="969.0" layoutY="171.0" prefHeight="30.0" prefWidth="42.0" promptText="59" visible="false" />
+      <Button fx:id="btnUpdateRollCallData" layoutX="1086.0" layoutY="172.0" mnemonicParsing="false" onAction="#updateRollCallDetail" prefHeight="29.0" prefWidth="58.0" text="修改">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Button>
+		<TableView fx:id="tvRollCallDetail" layoutX="58.0" layoutY="216.0" prefHeight="425.0" prefWidth="1097.0">
+			<columns>
+				<TableColumn fx:id="colDelete" prefWidth="59.0" text="刪除" />
+				<TableColumn fx:id="colSeqNo" prefWidth="84.0" text="序號" />
+				<TableColumn fx:id="colRollCallTime" prefWidth="176.0" text="點名時間" />
+				<TableColumn fx:id="colStudentNo" prefWidth="81.0" text="學員編號" />
+				<TableColumn fx:id="colName" prefWidth="96.0" text="姓名" />
+				<TableColumn fx:id="colDepartment" prefWidth="87.0" text="上課分部" />
+				<TableColumn fx:id="colCourseKind" minWidth="0.0" text="類別" />
+				<TableColumn fx:id="colLevel" minWidth="0.0" prefWidth="78.0" text="程度" />
+				<TableColumn fx:id="colSpecial" prefWidth="87.0" text="特色課程" />
+            	<TableColumn fx:id="colMemberBelongDesc" prefWidth="268.0" text="成員所屬" />
+			</columns>
+		</TableView>
+      <Button fx:id="btnOutputExcel" layoutX="59.0" layoutY="651.0" mnemonicParsing="false" onAction="#outputExcel" prefHeight="29.0" prefWidth="122.0" text="匯出查詢結果">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Button>
+	</children>
 </AnchorPane>
