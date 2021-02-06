@@ -7,6 +7,7 @@
 package com.wj.clubmdm.application;
 	
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import org.apache.log4j.Logger;
 
 import com.wj.clubmdm.function.CalculateStudyAge;
+import com.wj.clubmdm.vo.Student;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -58,13 +60,18 @@ public class Login extends Application {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		ArrayList<String> alStudentNo = new ArrayList<String>();
+		//ArrayList<String> alStudentNo = new ArrayList<String>();
+		ArrayList<Student> alStudent = new ArrayList<Student>();
 		try {		
 			conn = dbf.getSQLiteCon("", "Club.dll");
-			pstmt = conn.prepareStatement("select StudentNo from Student");
+			pstmt = conn.prepareStatement("select StudentNo, Name from Student");
 			rs = pstmt.executeQuery();
+			Student student = null;
 			while (rs.next()) {
-				alStudentNo.add(rs.getString("StudentNo"));
+				student = new Student();
+				student.setMemberNo(rs.getString("StudentNo"));
+				student.setName(rs.getString("Name"));
+				alStudent.add(student);
 			}	
 		} catch (Exception e) {
 			logger.info(e.getMessage(), e);
@@ -95,30 +102,33 @@ public class Login extends Application {
 		//}
 		
 		//不連線雲端，由Local端產出QRCode的作法(支援logo圖檔)
-		for (String no: alStudentNo) {
+		File file = null;
+		for (Student s : alStudent) {
 			int width = 200; //二維碼寬度
 			int height = 200; //二維碼高度
 			int margin = 0; //二維碼邊距
 			String logoPath = "image/logo.png";
 			int logoSizeMultiple = 3; //二維碼與LOGO的大小比例
 			String filePath = "Backup/QRCode"; //指定生成圖片文件的保存路徑
-
-			try {
-				// 生成二維碼
-				BufferedImage qrcode = QRCodeUtils.createQRCode(no, width, height, margin);
-				// 添加LOGO
-				qrcode = QRCodeUtils.createQRCodeWithLogo(qrcode, width, height, logoPath, logoSizeMultiple);
-				/*
-				 * 導出指定路徑
-				 * 參數1：QRCode物件
-				 * 參數2：產出目錄
-				 * 參數3：產出的檔名
-				 * 參數4：產出的副檔名
-				 */
-				QRCodeUtils.generateQRCodeToPath(qrcode, filePath, no, "png");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}			
+			file = new File(filePath + "/" + s.getMemberNo() + "_" + s.getName() +".png");
+			if (!file.exists()) {
+				try {
+					// 生成二維碼
+					BufferedImage qrcode = QRCodeUtils.createQRCode(s.getMemberNo(), width, height, margin);
+					// 添加LOGO
+					qrcode = QRCodeUtils.createQRCodeWithLogo(qrcode, width, height, logoPath, logoSizeMultiple);
+					/*
+					 * 導出指定路徑
+					 * 參數1：QRCode物件
+					 * 參數2：產出目錄
+					 * 參數3：產出的檔名
+					 * 參數4：產出的副檔名
+					 */
+					QRCodeUtils.generateQRCodeToPath(qrcode, filePath, s.getMemberNo() + "_" + s.getName(), "png");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}			
+			}
 		}		
 	}
 	
