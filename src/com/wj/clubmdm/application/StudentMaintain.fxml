@@ -203,7 +203,7 @@
                <font>
                   <Font size="12.0" />
                </font></Button>
-            <Button fx:id="btnAdd" defaultButton="true" mnemonicParsing="false" prefHeight="28.0" prefWidth="60.0" style="-fx-background-color: green;" text="新增" textFill="WHITE">
+            <Button fx:id="btnAdd" defaultButton="true" mnemonicParsing="false" onAction="#insertStudentDetail" prefHeight="28.0" prefWidth="60.0" style="-fx-background-color: green;" text="新增" textFill="WHITE">
                <font>
                   <Font size="12.0" />
                </font></Button>
