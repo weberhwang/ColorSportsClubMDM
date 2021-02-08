@@ -104,8 +104,8 @@ public class Login extends Application {
 		//不連線雲端，由Local端產出QRCode的作法(支援logo圖檔)
 		File file = null;
 		for (Student s : alStudent) {
-			int width = 200; //二維碼寬度
-			int height = 200; //二維碼高度
+			int width = 110; //二維碼寬度
+			int height = 110; //二維碼高度
 			int margin = 0; //二維碼邊距
 			String logoPath = "image/logo.png";
 			int logoSizeMultiple = 3; //二維碼與LOGO的大小比例
