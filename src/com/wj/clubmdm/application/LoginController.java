@@ -167,7 +167,6 @@ public class LoginController extends Application {
 			return;
 		}
 		*/
-		logger.info("TEST");
 		if (tfAccount.getText().trim().length() <= 0) {
 			labelMsg.setText("請輸入帳號！");
 			return;
