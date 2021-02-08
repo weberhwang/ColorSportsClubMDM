@@ -50,7 +50,7 @@ public class ChangePWDController extends Application {
 	/*
 	 * 檢核送出的資料
 	 */
-	public void chkSubmit() {
+	public void chkSubmit() {	
 		DBConnectionFactory dbcf = new DBConnectionFactory();
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -63,7 +63,7 @@ public class ChangePWDController extends Application {
 			return;
 		}
 		
-			//正規表示法 ^(\-|\+)?\d+(\.\d+)?$ 用來檢查正數、負數、小數
+		//正規表示法 ^(\-|\+)?\d+(\.\d+)?$ 用來檢查正數、負數、小數
 		if (tfAnswer.getText().matches("^(\\-|\\+)?\\d+(\\.\\d+)?$")) {				
 		} else {
 			chkError = true;
