@@ -66,22 +66,23 @@ public class Login extends Application {
 		if (!file.exists() && !file.isDirectory()) {
 			file.mkdir();
 		}
+		
 		file = new File("Backup");
 		if (!file.exists() && !file.isDirectory()) {
 			file.mkdir();
 		}
+		
 		file = new File("Backup/QRCode");
-		System.out.println(file.getAbsolutePath());
 		if (!file.exists() && !file.isDirectory()) {
 			file.mkdir();
 		}
+		
 		file = new File("Backup/Report");
-		System.out.println(file.getAbsolutePath());
 		if (!file.exists() && !file.isDirectory()) {
 			file.mkdir();
 		}
+		
 		file = new File("Backup/RollCallUpload");
-		System.out.println(file.getAbsolutePath());
 		if (!file.exists() && !file.isDirectory()) {
 			file.mkdir();
 		}
