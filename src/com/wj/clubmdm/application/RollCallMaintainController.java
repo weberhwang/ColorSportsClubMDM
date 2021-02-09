@@ -323,7 +323,8 @@ public class RollCallMaintainController extends Application {
 			} else if (cbID.getValue().equalsIgnoreCase("身份證字號")) {
 				sql += " and b.ID = ?";
 			} else if (cbID.getValue().equalsIgnoreCase("姓名")) {
-				sql += " and b.Name like %?%";
+				//sql += " and b.Name like %?%";
+				sql += " and b.Name like ?";
 			}
 		}
 		
@@ -383,9 +384,15 @@ public class RollCallMaintainController extends Application {
 			pstmt.clearParameters();
 			pstmt.setString(1, dpChoiceRollCallDateBegin.getValue().toString()); //點名時間(起)
 			pstmt.setString(2, dpChoiceRollCallDateEnd.getValue().toString()); //點名時間(迄)
+			//點名篩選條件值(學員編號、身份證字號、姓名)
 			if (tfIDValue.getText().length() > 0) {
-				pstmt.setString(3, tfIDValue.getText().trim()); //點名篩選條件值				
-			}			
+				if (cbID.getValue().equalsIgnoreCase("姓名")) {
+					pstmt.setString(3, "%"+tfIDValue.getText().trim()+"%"); //姓名可用like查詢 
+				} else {
+					pstmt.setString(3, tfIDValue.getText().trim());
+				}
+			}
+		
 			rs = pstmt.executeQuery();
 			while (rs.next()) {
 				seqNo++;
@@ -933,7 +940,7 @@ public class RollCallMaintainController extends Application {
 		}
 		
 		OutputStream fileOut = null;
-		String fileName = "../report/RollCall_" + st.getNowTime("yyyyMMddHHmmss") + ".xlsx";
+		String fileName = "Backup/Report/RollCall_" + st.getNowTime("yyyyMMddHHmmss") + ".xlsx";
 		
 		//檢查檔案是否存在，若存在先刪除
 		File file = new File(fileName);

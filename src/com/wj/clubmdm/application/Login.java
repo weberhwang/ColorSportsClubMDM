@@ -32,6 +32,8 @@ public class Login extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		try {
+			//檢查目錄結構
+			checkFolderStructure();			
 			//QRCode預產出
 			preGetQRCode();
 			//重新計算學員目前的學齡
@@ -47,6 +49,41 @@ public class Login extends Application {
 			primaryStage.show();
 		} catch(Exception e) {
 			logger.info(e.getMessage(), e);
+		}
+	}
+	/*
+	 * 檢核 ColorSportsClubMDM 目錄下，是否有下列目錄
+	 * log                   (放log檔) 這個Folder不用檢查，log4j會自己建立
+	 * image                 (放logo圖檔)
+	 * Backup                (備份目錄)
+	 * Backup/QRCode         (放學員QRCode圖檔)
+	 * Backup/Report         (放報表檔)
+	 * Backup/RollCallUpload (放點名檔)
+	 */
+	private void checkFolderStructure() {
+		File file;
+		file = new File("image");
+		if (!file.exists() && !file.isDirectory()) {
+			file.mkdir();
+		}
+		file = new File("Backup");
+		if (!file.exists() && !file.isDirectory()) {
+			file.mkdir();
+		}
+		file = new File("Backup/QRCode");
+		System.out.println(file.getAbsolutePath());
+		if (!file.exists() && !file.isDirectory()) {
+			file.mkdir();
+		}
+		file = new File("Backup/Report");
+		System.out.println(file.getAbsolutePath());
+		if (!file.exists() && !file.isDirectory()) {
+			file.mkdir();
+		}
+		file = new File("Backup/RollCallUpload");
+		System.out.println(file.getAbsolutePath());
+		if (!file.exists() && !file.isDirectory()) {
+			file.mkdir();
 		}
 	}
 	
