@@ -86,6 +86,11 @@ public class Login extends Application {
 		if (!file.exists() && !file.isDirectory()) {
 			file.mkdir();
 		}
+		
+		file = new File("Backup/Photo");
+		if (!file.exists() && !file.isDirectory()) {
+			file.mkdir();
+		}
 	}
 	
 	/*
