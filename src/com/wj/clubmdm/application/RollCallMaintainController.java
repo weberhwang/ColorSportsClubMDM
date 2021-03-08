@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.FillPatternType;
@@ -29,6 +30,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.wj.clubmdm.component.BtnDelRollCall;
 import com.wj.clubmdm.vo.RollCallDetail;
 import com.wj.clubmdm.vo.RollCallUploadDetail;
+import com.wj.clubmdm.vo.StudentAttendance;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -323,7 +325,8 @@ public class RollCallMaintainController extends Application {
 			} else if (cbID.getValue().equalsIgnoreCase("身份證字號")) {
 				sql += " and b.ID = ?";
 			} else if (cbID.getValue().equalsIgnoreCase("姓名")) {
-				sql += " and b.Name like %?%";
+				//sql += " and b.Name like %?%";
+				sql += " and b.Name like ?";
 			}
 		}
 		
@@ -383,9 +386,15 @@ public class RollCallMaintainController extends Application {
 			pstmt.clearParameters();
 			pstmt.setString(1, dpChoiceRollCallDateBegin.getValue().toString()); //點名時間(起)
 			pstmt.setString(2, dpChoiceRollCallDateEnd.getValue().toString()); //點名時間(迄)
+			//點名篩選條件值(學員編號、身份證字號、姓名)
 			if (tfIDValue.getText().length() > 0) {
-				pstmt.setString(3, tfIDValue.getText().trim()); //點名篩選條件值				
-			}			
+				if (cbID.getValue().equalsIgnoreCase("姓名")) {
+					pstmt.setString(3, "%"+tfIDValue.getText().trim()+"%"); //姓名可用like查詢 
+				} else {
+					pstmt.setString(3, tfIDValue.getText().trim());
+				}
+			}
+		
 			rs = pstmt.executeQuery();
 			while (rs.next()) {
 				seqNo++;
@@ -933,7 +942,7 @@ public class RollCallMaintainController extends Application {
 		}
 		
 		OutputStream fileOut = null;
-		String fileName = "../report/RollCall_" + st.getNowTime("yyyyMMddHHmmss") + ".xlsx";
+		String fileName = "Backup/Report/RollCall_" + st.getNowTime("yyyyMMddHHmmss") + ".xlsx";
 		
 		//檢查檔案是否存在，若存在先刪除
 		File file = new File(fileName);
@@ -1013,6 +1022,70 @@ public class RollCallMaintainController extends Application {
 			cell = row.createCell(8);
 			cell.setCellValue(rcd.getMemberBelongDesc());
 		}
+		
+		/*
+		 * Sheet2 學員每月出勤次數統計
+		 */
+		XSSFSheet sheet2 = wb.createSheet("出勤統計");
+		sheet2.setColumnWidth(0, 10*256); //學員編號
+		sheet2.setColumnWidth(1, 14*256); //出勤年月
+		sheet2.setColumnWidth(2, 12*256); //姓名
+		sheet2.setColumnWidth(3, 10*256);  //出勤次數
+		
+		int row2 = 0; //sheet2的列數
+		row = sheet2.createRow(row2++);
+		cell = row.createCell(0);
+		cell.setCellStyle(styleRow1);
+		cell.setCellValue("學員編號");
+		cell = row.createCell(1);
+		cell.setCellStyle(styleRow1);
+		cell.setCellValue("出勤年月");
+		cell = row.createCell(2);
+		cell.setCellStyle(styleRow1);
+		cell.setCellValue("姓名");
+		cell = row.createCell(3);
+		cell.setCellStyle(styleRow1);
+		cell.setCellValue("出勤次數");
+		
+		/*
+		 * 此TreeMap用於統計學員每月的出勤次數，會以 學員編號 > 出勤年月 的方式進行排序
+		 * TreeMap的鍵值為 學員編號+出勤年月(yyyymm)
+		 */
+		TreeMap<String, StudentAttendance> tmSA = new TreeMap<String, StudentAttendance>();
+		
+		String studentNo = null;
+		String attendanceYYYYMM = null;
+		String key = null;
+		StudentAttendance sa = null;
+
+		for (RollCallDetail rcd : tvRollCallDetail.getItems()) {
+			studentNo = rcd.getStudentNo();
+			attendanceYYYYMM = rcd.getRollCallTime().substring(0, 7);
+			key = attendanceYYYYMM + studentNo;
+			// 若 學員編號+出勤年月(yyyymm)的組合已存在tmSA中，則進行出勤次數+1的動作
+			if (tmSA.containsKey(key)) {
+				tmSA.get(key).setAttendanceCount(tmSA.get(key).getAttendanceCount() + 1);
+			} else {
+				sa = new StudentAttendance();
+				sa.setMemberNo(studentNo);
+				sa.setName(rcd.getName());
+				sa.setAttendanceCount(1);
+				sa.setAttendanceYYYYMM(attendanceYYYYMM);
+				tmSA.put(key, sa);				
+			}
+		}		
+		
+		for (String tmSAKey : tmSA.keySet()) {
+			row = sheet2.createRow(row2++);
+			cell = row.createCell(0);
+			cell.setCellValue(tmSA.get(tmSAKey).getMemberNo());
+			cell = row.createCell(1);
+			cell.setCellValue(tmSA.get(tmSAKey).getAttendanceYYYYMM());
+			cell = row.createCell(2);
+			cell.setCellValue(tmSA.get(tmSAKey).getName());
+			cell = row.createCell(3);
+			cell.setCellValue(tmSA.get(tmSAKey).getAttendanceCount());		
+		}		
 		
 		boolean errChk = false;
 		try {
