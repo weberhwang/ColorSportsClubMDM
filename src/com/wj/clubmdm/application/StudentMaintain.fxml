@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
@@ -11,7 +12,6 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.effect.ColorAdjust?>
-<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
@@ -19,32 +19,25 @@
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.wj.clubmdm.application.StudentMaintainController">
    <children>
-      <TextField fx:id="tfMemberName" layoutX="316.0" layoutY="21.0" prefHeight="15.0" prefWidth="110.0" promptText="蔡黑黑" AnchorPane.topAnchor="15.0">
-         <font>
-            <Font size="12.0" />
-         </font></TextField>
-      <DatePicker fx:id="dpMemberBirthday" layoutX="315.0" layoutY="55.0" prefHeight="25.0" prefWidth="115.0" promptText="1986/01/05" AnchorPane.topAnchor="52.0" />
-      <ImageView fx:id="imgvMemberImage" fitHeight="150.0" fitWidth="150.0" layoutX="73.0" layoutY="22.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="528.0" AnchorPane.leftAnchor="70.0" AnchorPane.rightAnchor="977.0" AnchorPane.topAnchor="20.0">
-         <image>
-            <Image url="@/logo.png" />
-         </image>
-         <effect>
-            <ColorAdjust />
-         </effect>
-         <cursor>
-            <Cursor fx:constant="DEFAULT" />
-         </cursor>
-      </ImageView>
       <Label layoutX="271.0" layoutY="25.0" text="*姓名" AnchorPane.topAnchor="20.0">
          <font>
             <Font size="12.0" />
          </font>
       </Label>
-      <Button layoutX="127.0" layoutY="196.0" mnemonicParsing="false" text="上傳">
+      <TextField fx:id="tfMemberName" layoutX="316.0" layoutY="21.0" prefHeight="15.0" prefWidth="110.0" promptText="蔡黑黑" AnchorPane.topAnchor="15.0">
          <font>
             <Font size="12.0" />
-         </font></Button>
-      <Label layoutX="278.0" layoutY="61.0" text="生日" AnchorPane.topAnchor="57.0">
+         </font></TextField>
+      <Label layoutX="440.0" layoutY="24.0" text="*身分證字號" AnchorPane.topAnchor="20.0">
+         <font>
+            <Font size="12.0" />
+         </font>
+      </Label>
+      <TextField fx:id="tfMemberID" layoutX="521.0" layoutY="15.0" prefHeight="23.0" prefWidth="110.0" promptText="H123456789" AnchorPane.topAnchor="15.0">
+         <font>
+            <Font size="12.0" />
+         </font></TextField>
+      <Label layoutX="645.0" layoutY="23.0" text="*就讀學校" AnchorPane.topAnchor="20.0">
          <font>
             <Font size="12.0" />
          </font>
@@ -53,69 +46,36 @@
          <font>
             <Font size="12.0" />
          </font></TextField>
+      <Label layoutX="278.0" layoutY="61.0" text="*生日" AnchorPane.topAnchor="57.0">
+         <font>
+            <Font size="12.0" />
+         </font>
+      </Label>
+      <DatePicker fx:id="dpMemberBirthday" layoutX="315.0" layoutY="55.0" prefHeight="25.0" prefWidth="115.0" promptText="1986/01/05" AnchorPane.topAnchor="52.0" />
       <Label layoutX="442.0" layoutY="61.0" text="*性別" AnchorPane.topAnchor="57.0">
          <font>
             <Font size="12.0" />
          </font>
       </Label>
       <ChoiceBox fx:id="cbMemberSex" layoutX="485.0" layoutY="55.0" prefHeight="23.0" prefWidth="40.0" AnchorPane.topAnchor="52.0" />
-      <Label layoutX="645.0" layoutY="23.0" text="*就讀學校" AnchorPane.topAnchor="20.0">
-         <font>
-            <Font size="12.0" />
-         </font>
-      </Label>
-      <Label layoutX="647.0" layoutY="57.0" text="*年級" AnchorPane.topAnchor="57.0">
-         <font>
-            <Font size="12.0" />
-         </font>
-      </Label>
-      <Label layoutX="894.0" layoutY="60.0" text="*連絡電話(一)" AnchorPane.rightAnchor="234.0" AnchorPane.topAnchor="57.0">
-         <font>
-            <Font size="12.0" />
-         </font>
-      </Label>
-      <TextField fx:id="tfGuardian1" layoutX="984.0" layoutY="21.0" promptText="蔡XX" AnchorPane.rightAnchor="68.5" AnchorPane.topAnchor="15.0">
-         <font>
-            <Font size="12.0" />
-         </font></TextField>
-      <TextField fx:id="tfContectTel1" layoutX="984.0" layoutY="56.0" promptText="0966-123-123" AnchorPane.rightAnchor="68.5" AnchorPane.topAnchor="52.0">
-         <font>
-            <Font size="12.0" />
-         </font></TextField>
       <Label layoutX="540.0" layoutY="57.0" text="身高" AnchorPane.topAnchor="57.0">
          <font>
             <Font size="12.0" />
          </font>
       </Label>
       <TextField fx:id="tfMemberHeight" layoutX="576.0" layoutY="55.0" prefHeight="23.0" prefWidth="57.0" promptText="185" AnchorPane.topAnchor="52.0" />
-      <Label layoutX="905.0" layoutY="20.0" text="*監護人(一)" AnchorPane.rightAnchor="234.0" AnchorPane.topAnchor="20.0">
+      <Label layoutX="647.0" layoutY="57.0" text="*年級" AnchorPane.topAnchor="57.0">
          <font>
             <Font size="12.0" />
          </font>
       </Label>
-      <Label layoutX="247.0" layoutY="155.0" text="*上課分部" AnchorPane.topAnchor="152.0">
+      <ChoiceBox fx:id="cbMemberSchoolDesc" layoutX="691.0" layoutY="55.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="52.0" />
+      <Label layoutX="777.0" layoutY="61.0" text="特教生" AnchorPane.topAnchor="57.0">
          <font>
             <Font size="12.0" />
          </font>
       </Label>
-      <Label layoutX="911.0" layoutY="93.0" text="監護人(二)" AnchorPane.rightAnchor="234.0" AnchorPane.topAnchor="93.0">
-         <font>
-            <Font size="12.0" />
-         </font>
-      </Label>
-      <TextField fx:id="tfContectTel2" layoutX="984.0" layoutY="126.0" promptText="0988-123-456" AnchorPane.rightAnchor="68.5" AnchorPane.topAnchor="126.0">
-         <font>
-            <Font size="12.0" />
-         </font></TextField>
-      <TextField fx:id="tfGuardian2" layoutX="984.0" layoutY="91.0" promptText="OOXX" AnchorPane.rightAnchor="68.5" AnchorPane.topAnchor="91.0">
-         <font>
-            <Font size="12.0" />
-         </font></TextField>
-      <Label layoutX="898.0" layoutY="128.0" text="連絡電話(二)" AnchorPane.rightAnchor="234.0" AnchorPane.topAnchor="128.0">
-         <font>
-            <Font size="12.0" />
-         </font>
-      </Label>
+      <ChoiceBox fx:id="cbSpecial" layoutX="826.0" layoutY="55.0" prefHeight="25.0" prefWidth="45.0" AnchorPane.topAnchor="52.0" />
       <Label layoutX="251.0" layoutY="91.0" text="通訊地址" AnchorPane.topAnchor="93.0">
          <font>
             <Font size="12.0" />
@@ -125,45 +85,121 @@
          <font>
             <Font size="12.0" />
          </font></TextField>
-      <Label layoutX="777.0" layoutY="61.0" text="特教生" AnchorPane.topAnchor="57.0">
-         <font>
-            <Font size="12.0" />
-         </font>
-      </Label>
-      <ChoiceBox fx:id="cbSpecial" layoutX="826.0" layoutY="55.0" prefHeight="25.0" prefWidth="45.0" AnchorPane.topAnchor="52.0" />
-      <Label layoutX="410.0" layoutY="154.0" text="*類別" AnchorPane.topAnchor="152.0">
-         <font>
-            <Font size="12.0" />
-         </font>
-      </Label>
-      <Label layoutX="533.0" layoutY="153.0" text="*程度" AnchorPane.topAnchor="152.0">
-         <font>
-            <Font size="12.0" />
-         </font>
-      </Label>
-      <Label layoutX="595.0" layoutY="125.0" text="*入隊日" AnchorPane.topAnchor="125.0">
-         <font>
-            <Font size="12.0" />
-         </font>
-      </Label>
-      <DatePicker fx:id="dpJoinDate" layoutX="651.0" layoutY="119.0" prefHeight="25.0" prefWidth="115.0" promptText="2020/06/01" AnchorPane.rightAnchor="434.0" AnchorPane.topAnchor="119.0" />
       <Label layoutX="780.0" layoutY="90.0" text="轉隊生" AnchorPane.topAnchor="93.0">
          <font>
             <Font size="12.0" />
          </font>
       </Label>
       <ChoiceBox fx:id="cbTransfer" layoutX="827.0" layoutY="87.0" prefHeight="25.0" prefWidth="45.0" AnchorPane.topAnchor="90.0" />
+      <Label layoutX="246.0" layoutY="123.0" text="*成員所屬" AnchorPane.topAnchor="125.0">
+         <font>
+            <Font size="12.0" />
+         </font>
+      </Label>
+      <CheckBox fx:id="ckbWinterSummerCamp" layoutX="320.0" layoutY="122.0" mnemonicParsing="false" text="冬夏令營" AnchorPane.topAnchor="125.0">
+         <font>
+            <Font size="12.0" />
+         </font></CheckBox>
+      <CheckBox fx:id="ckbSchoolClub" layoutX="404.0" layoutY="122.0" mnemonicParsing="false" text="學校社團" AnchorPane.topAnchor="125.0">
+         <font>
+            <Font size="12.0" />
+         </font></CheckBox>
+      <CheckBox fx:id="ckbColorClub" layoutX="488.0" layoutY="122.0" mnemonicParsing="false" text="俱樂部" AnchorPane.topAnchor="125.0">
+         <font>
+            <Font size="12.0" />
+         </font></CheckBox>
+      <Label layoutX="595.0" layoutY="125.0" text="*入隊日" AnchorPane.topAnchor="125.0">
+         <font>
+            <Font size="12.0" />
+         </font>
+      </Label>
+      <DatePicker fx:id="dpJoinDate" layoutX="651.0" layoutY="119.0" prefHeight="25.0" prefWidth="115.0" promptText="2020/06/01" AnchorPane.rightAnchor="434.0" AnchorPane.topAnchor="119.0" />
+      <Label layoutX="247.0" layoutY="155.0" text="*上課分部" AnchorPane.topAnchor="152.0">
+         <font>
+            <Font size="12.0" />
+         </font>
+      </Label>
+      <ChoiceBox fx:id="cbDepartment" layoutX="319.0" layoutY="152.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="150.0" />
+      <Label layoutX="410.0" layoutY="154.0" text="*類別" AnchorPane.topAnchor="152.0">
+         <font>
+            <Font size="12.0" />
+         </font>
+      </Label>
+      <ChoiceBox fx:id="cbCourseKind" layoutX="452.0" layoutY="150.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="150.0" />
+      <Label layoutX="533.0" layoutY="153.0" text="*程度" AnchorPane.topAnchor="152.0">
+         <font>
+            <Font size="12.0" />
+         </font>
+      </Label>
+      <ChoiceBox fx:id="cbLevel" layoutX="571.0" layoutY="150.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="150.0" />
+      <Label layoutX="665.0" layoutY="155.0" text="註記" AnchorPane.topAnchor="152.0">
+         <font>
+            <Font size="12.0" />
+         </font>
+      </Label>
+      <TextField fx:id="tfMark" layoutX="708.0" layoutY="150.0" prefHeight="23.0" prefWidth="165.0" promptText="有ADHA 症頭" AnchorPane.topAnchor="150.0">
+         <font>
+            <Font size="12.0" />
+         </font></TextField>
+      <Label layoutX="905.0" layoutY="20.0" text="*監護人(一)" AnchorPane.rightAnchor="234.0" AnchorPane.topAnchor="20.0">
+         <font>
+            <Font size="12.0" />
+         </font>
+      </Label>
+      <TextField fx:id="tfGuardian1" layoutX="984.0" layoutY="21.0" promptText="蔡XX" AnchorPane.rightAnchor="68.5" AnchorPane.topAnchor="15.0">
+         <font>
+            <Font size="12.0" />
+         </font></TextField>
+      <Label layoutX="894.0" layoutY="60.0" text="*連絡電話(一)" AnchorPane.rightAnchor="234.0" AnchorPane.topAnchor="57.0">
+         <font>
+            <Font size="12.0" />
+         </font>
+      </Label>
+      <TextField fx:id="tfContectTel1" layoutX="984.0" layoutY="56.0" promptText="0966-123-123" AnchorPane.rightAnchor="68.5" AnchorPane.topAnchor="52.0">
+         <font>
+            <Font size="12.0" />
+         </font></TextField>
+      <Label layoutX="911.0" layoutY="93.0" text="監護人(二)" AnchorPane.rightAnchor="234.0" AnchorPane.topAnchor="93.0">
+         <font>
+            <Font size="12.0" />
+         </font>
+      </Label>
+      <TextField fx:id="tfGuardian2" layoutX="984.0" layoutY="91.0" promptText="OOXX" AnchorPane.rightAnchor="68.5" AnchorPane.topAnchor="91.0">
+         <font>
+            <Font size="12.0" />
+         </font></TextField>
+      <Label layoutX="898.0" layoutY="128.0" text="連絡電話(二)" AnchorPane.rightAnchor="234.0" AnchorPane.topAnchor="128.0">
+         <font>
+            <Font size="12.0" />
+         </font>
+      </Label>
+      <TextField fx:id="tfContectTel2" layoutX="984.0" layoutY="126.0" promptText="0988-123-456" AnchorPane.rightAnchor="68.5" AnchorPane.topAnchor="126.0">
+         <font>
+            <Font size="12.0" />
+         </font></TextField>
       <Label layoutX="96.0" layoutY="176.0" text="照片尺寸 : 150*150">
          <font>
             <Font size="12.0" />
          </font></Label>
+      <ImageView fx:id="imgvMemberImage" fitHeight="150.0" fitWidth="150.0" layoutX="73.0" layoutY="22.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="528.0" AnchorPane.leftAnchor="70.0" AnchorPane.rightAnchor="977.0" AnchorPane.topAnchor="20.0">
+         <effect>
+            <ColorAdjust />
+         </effect>
+         <cursor>
+            <Cursor fx:constant="DEFAULT" />
+         </cursor>
+      </ImageView>
+      <Button fx:id="btnImgUpload" layoutX="127.0" layoutY="196.0" mnemonicParsing="false" onAction="#choiceImg" style="-fx-background-color: #80ced6;" text="上傳" textFill="WHITE">
+         <font>
+            <Font size="12.0" />
+         </font></Button>
       <HBox alignment="BOTTOM_CENTER" layoutX="500.0" layoutY="186.0" prefHeight="27.0" prefWidth="189.0" AnchorPane.leftAnchor="500.0" AnchorPane.topAnchor="185.0">
          <children>
-            <Button contentDisplay="CENTER" defaultButton="true" mnemonicParsing="false" prefHeight="28.0" prefWidth="60.0" style="-fx-background-color: ORANGE;" text="重設" textFill="WHITE">
+            <Button fx:id="btnReset" contentDisplay="CENTER" defaultButton="true" mnemonicParsing="false" onAction="#resetInputColumn" prefHeight="28.0" prefWidth="60.0" style="-fx-background-color: ORANGE;" text="重設" textFill="WHITE">
                <font>
                   <Font size="12.0" />
                </font></Button>
-            <Button defaultButton="true" mnemonicParsing="false" prefHeight="28.0" prefWidth="60.0" style="-fx-background-color: green;" text="新增" textFill="WHITE">
+            <Button fx:id="btnAdd" defaultButton="true" mnemonicParsing="false" onAction="#insertStudentDetail" prefHeight="28.0" prefWidth="60.0" style="-fx-background-color: green;" text="新增" textFill="WHITE">
                <font>
                   <Font size="12.0" />
                </font></Button>
@@ -173,179 +209,146 @@
          <items>
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="108.0" prefWidth="1098.0">
                <children>
-                  <Label layoutX="242.0" layoutY="10.0" text="姓名" AnchorPane.topAnchor="10.0">
-                     <font>
-                        <Font size="12.0" />
-                     </font>
-                  </Label>
-                  <TextField layoutX="280.0" layoutY="8.0" prefHeight="15.0" prefWidth="110.0" AnchorPane.topAnchor="8.0">
-                     <font>
-                        <Font size="12.0" />
-                     </font>
-                  </TextField>
-                  <ChoiceBox layoutX="434.0" layoutY="9.0" prefHeight="25.0" prefWidth="45.0" AnchorPane.topAnchor="8.0" />
-                  <Label layoutX="398.0" layoutY="16.0" text="性別" AnchorPane.topAnchor="10.0">
-                     <font>
-                        <Font size="12.0" />
-                     </font>
-                  </Label>
                   <Label layoutX="65.0" layoutY="11.0" text="學員編號" AnchorPane.topAnchor="10.0">
                      <font>
                         <Font size="12.0" />
                      </font>
                   </Label>
-                  <TextField layoutX="128.0" layoutY="15.0" prefHeight="15.0" prefWidth="100.0" AnchorPane.topAnchor="8.0">
+                  <TextField fx:id="tfStudentNo_query" layoutX="128.0" layoutY="15.0" prefHeight="15.0" prefWidth="100.0" AnchorPane.topAnchor="8.0">
                      <font>
                         <Font size="12.0" />
                      </font>
                   </TextField>
-                  <ChoiceBox layoutX="753.0" layoutY="8.0" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="8.0" />
-                  <Label layoutX="715.0" layoutY="10.0" text="年級" AnchorPane.topAnchor="10.0">
+                  <Label layoutX="242.0" layoutY="10.0" text="姓名" AnchorPane.topAnchor="10.0">
                      <font>
                         <Font size="12.0" />
                      </font>
                   </Label>
-                  <DatePicker layoutX="817.0" layoutY="45.0" prefHeight="25.0" prefWidth="115.0" AnchorPane.topAnchor="45.0" />
-                  <ChoiceBox layoutX="681.0" layoutY="46.0" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="45.0" />
-                  <ChoiceBox layoutX="555.0" layoutY="45.0" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="45.0" />
-                  <ChoiceBox layoutX="435.0" layoutY="45.0" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="45.0" />
-                  <Label layoutX="765.0" layoutY="47.0" text="入隊日" AnchorPane.topAnchor="47.0">
+                  <TextField fx:id="tfMemberName_query" layoutX="280.0" layoutY="8.0" prefHeight="15.0" prefWidth="110.0" AnchorPane.topAnchor="8.0">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </TextField>
+                  <Label layoutX="398.0" layoutY="16.0" text="性別" AnchorPane.topAnchor="10.0">
                      <font>
                         <Font size="12.0" />
                      </font>
                   </Label>
-                  <Label layoutX="643.0" layoutY="47.0" text="程度" AnchorPane.topAnchor="47.0">
-                     <font>
-                        <Font size="12.0" />
-                     </font>
-                  </Label>
-                  <Label layoutX="518.0" layoutY="47.0" text="類別" AnchorPane.topAnchor="47.0">
-                     <font>
-                        <Font size="12.0" />
-                     </font>
-                  </Label>
-                  <Label layoutX="376.0" layoutY="47.0" text="上課分部" AnchorPane.topAnchor="47.0">
-                     <font>
-                        <Font size="12.0" />
-                     </font>
-                  </Label>
-                  <Label layoutX="937.0" layoutY="47.0" text="~">
-                     <font>
-                        <Font size="14.0" />
-                     </font>
-                  </Label>
-                  <DatePicker layoutX="951.0" layoutY="45.0" prefHeight="25.0" prefWidth="115.0" AnchorPane.topAnchor="45.0" />
+                  <ChoiceBox fx:id="cbMemberSex_query" layoutX="434.0" layoutY="9.0" prefHeight="25.0" prefWidth="45.0" AnchorPane.topAnchor="8.0" />
                   <Label layoutX="493.0" layoutY="10.0" text="就讀學校" AnchorPane.topAnchor="10.0">
                      <font>
                         <Font size="12.0" />
                      </font>
                   </Label>
-                  <TextField layoutX="555.0" layoutY="8.0" prefHeight="23.0" prefWidth="143.0" AnchorPane.topAnchor="8.0">
+                  <TextField fx:id="tfMemberSchool_query" layoutX="555.0" layoutY="8.0" prefHeight="23.0" prefWidth="143.0" AnchorPane.topAnchor="8.0">
                      <font>
                         <Font size="12.0" />
                      </font>
                   </TextField>
-                  <HBox alignment="BOTTOM_CENTER" layoutX="460.0" layoutY="80.0" prefHeight="27.0" prefWidth="189.0" AnchorPane.leftAnchor="460.0" AnchorPane.topAnchor="80.0">
-                     <children>
-                        <Button defaultButton="true" mnemonicParsing="false" prefHeight="34.0" prefWidth="60.0" style="-fx-background-color: BLACK;" text="查詢" textFill="WHITE" />
-                        <Button defaultButton="true" mnemonicParsing="false" prefHeight="28.0" prefWidth="60.0" style="-fx-background-color: GRAY;" text="產出名單" textFill="WHITE" />
-                     </children>
-                  </HBox>
-                  <Label layoutX="62.0" layoutY="45.0" text="成員所屬" AnchorPane.topAnchor="45.0">
+                  <Label layoutX="715.0" layoutY="10.0" text="年級" AnchorPane.topAnchor="10.0">
                      <font>
                         <Font size="12.0" />
                      </font>
                   </Label>
-                  <CheckBox layoutX="297.0" layoutY="50.0" mnemonicParsing="false" text="俱樂部" AnchorPane.topAnchor="45.0">
-                     <font>
-                        <Font size="12.0" />
-                     </font>
-                  </CheckBox>
-                  <CheckBox layoutX="213.0" layoutY="50.0" mnemonicParsing="false" text="學校社團" AnchorPane.topAnchor="45.0">
-                     <font>
-                        <Font size="12.0" />
-                     </font>
-                  </CheckBox>
-                  <CheckBox layoutX="129.0" layoutY="50.0" mnemonicParsing="false" text="冬夏令營" AnchorPane.topAnchor="45.0">
-                     <font>
-                        <Font size="12.0" />
-                     </font>
-                  </CheckBox>
+                  <ChoiceBox fx:id="cbMemberSchoolDesc_query" layoutX="753.0" layoutY="8.0" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="8.0" />
                   <Label layoutX="841.0" layoutY="10.0" text="狀態" AnchorPane.topAnchor="10.0">
                      <font>
                         <Font size="12.0" />
                      </font>
                   </Label>
-                  <ChoiceBox layoutX="885.0" layoutY="8.0" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="8.0" />
+                  <ChoiceBox fx:id="cbStatus_query" layoutX="885.0" layoutY="8.0" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="8.0" />
+                  <Label layoutX="62.0" layoutY="45.0" text="成員所屬" AnchorPane.topAnchor="45.0">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </Label>
+                  <CheckBox fx:id="ckbWinterSumerCamp_query" layoutX="129.0" layoutY="50.0" mnemonicParsing="false" text="冬夏令營" AnchorPane.topAnchor="45.0">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </CheckBox>
+                  <CheckBox fx:id="ckbSchoolClub_query" layoutX="213.0" layoutY="50.0" mnemonicParsing="false" text="學校社團" AnchorPane.topAnchor="45.0">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </CheckBox>
+                  <CheckBox fx:id="ckbColorClub_query" layoutX="297.0" layoutY="50.0" mnemonicParsing="false" text="俱樂部" AnchorPane.topAnchor="45.0">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </CheckBox>
+                  <Label layoutX="376.0" layoutY="47.0" text="上課分部" AnchorPane.topAnchor="47.0">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </Label>
+                  <ChoiceBox fx:id="cbDepartment_query" layoutX="435.0" layoutY="45.0" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="45.0" />
+                  <Label layoutX="518.0" layoutY="47.0" text="類別" AnchorPane.topAnchor="47.0">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </Label>
+                  <ChoiceBox fx:id="cbCourseKind_query" layoutX="555.0" layoutY="45.0" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="45.0" />
+                  <Label layoutX="643.0" layoutY="47.0" text="程度" AnchorPane.topAnchor="47.0">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </Label>
+                  <ChoiceBox fx:id="cbLevel_query" layoutX="681.0" layoutY="46.0" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="45.0" />
+                  <Label layoutX="765.0" layoutY="47.0" text="入隊日" AnchorPane.topAnchor="47.0">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </Label>
+                  <DatePicker fx:id="dpJoinDateStart" layoutX="817.0" layoutY="45.0" prefHeight="25.0" prefWidth="115.0" AnchorPane.topAnchor="45.0" />
+                  <Label layoutX="937.0" layoutY="47.0" text="~">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <DatePicker fx:id="dpJoinDateEnd" layoutX="951.0" layoutY="45.0" prefHeight="25.0" prefWidth="115.0" AnchorPane.topAnchor="45.0" />
+                  <HBox alignment="BOTTOM_CENTER" layoutX="460.0" layoutY="80.0" prefHeight="27.0" prefWidth="189.0" AnchorPane.leftAnchor="460.0" AnchorPane.topAnchor="80.0">
+                     <children>
+                        <Button fx:id="btnQuery" defaultButton="true" mnemonicParsing="false" onAction="#queryStudentList" prefHeight="34.0" prefWidth="60.0" style="-fx-background-color: BLACK;" text="查詢" textFill="WHITE" />
+                        <Button fx:id="btnExport" defaultButton="true" mnemonicParsing="false" prefHeight="28.0" prefWidth="60.0" style="-fx-background-color: GRAY;" text="產出名單" textFill="WHITE" />
+                     </children>
+                  </HBox>
                </children>
             </AnchorPane>
             <AnchorPane minHeight="0.0" minWidth="0.0">
                <children>
-                  <TableView layoutX="-1.0" prefHeight="371.0" prefWidth="1100.0">
+                  <TableView fx:id="tvStudentDetail" layoutX="-1.0" prefHeight="371.0" prefWidth="1100.0">
                      <columns>
-                        <TableColumn prefWidth="76.0" text="序號" />
-                        <TableColumn prefWidth="103.0" text="學員編號" />
-                        <TableColumn prefWidth="144.0" text="姓名" />
-                        <TableColumn prefWidth="57.0" text="性別" />
-                        <TableColumn prefWidth="94.0" text="上課分部" />
-                        <TableColumn prefWidth="94.0" text="類別" />
-                        <TableColumn prefWidth="103.0" text="程度" />
-                        <TableColumn prefWidth="209.0" text="入隊日" />
-                        <TableColumn prefWidth="201.6666259765625" text="編輯" />
+                        <TableColumn fx:id="colSeq" prefWidth="76.0" text="序號" />
+                        <TableColumn fx:id="colStudentNo" prefWidth="103.0" text="學員編號" />
+                        <TableColumn fx:id="colMemberName" prefWidth="144.0" text="姓名" />
+                        <TableColumn fx:id="colMemberSex" prefWidth="57.0" text="性別" />
+                        <TableColumn fx:id="colDepartment" prefWidth="94.0" text="上課分部" />
+                        <TableColumn fx:id="colCourceKind" prefWidth="94.0" text="類別" />
+                        <TableColumn fx:id="colLevel" prefWidth="103.0" text="程度" />
+                        <TableColumn fx:id="colJoinDate" prefWidth="209.0" text="入隊日" />
+                        <TableColumn fx:id="colEdit" prefWidth="203.0" text="編輯" />
                      </columns>
                   </TableView>
                </children>
             </AnchorPane>
          </items>
+         <opaqueInsets>
+            <Insets top="10.0" />
+         </opaqueInsets>
       </SplitPane>
       <Label layoutX="44.0" layoutY="630.0" text="資訊顯示框">
          <font>
             <Font size="14.0" />
          </font>
       </Label>
-      <TextField layoutX="44.0" layoutY="653.0" prefHeight="35.0" prefWidth="1100.0" promptText="2020-07-16 17:30:26 查詢到30筆學員資料">
+      <TextField fx:id="tfResultInfo" layoutX="44.0" layoutY="653.0" prefHeight="35.0" prefWidth="1100.0" promptText="2020-07-16 17:30:26 查詢到30筆學員資料">
          <font>
             <Font size="12.0" />
          </font>
       </TextField>
-      <Label layoutX="440.0" layoutY="24.0" text="身分證字號" AnchorPane.topAnchor="20.0">
-         <font>
-            <Font size="12.0" />
-         </font>
-      </Label>
-      <TextField fx:id="tfMemberID" layoutX="521.0" layoutY="15.0" prefHeight="23.0" prefWidth="110.0" promptText="H123456789" AnchorPane.topAnchor="15.0">
-         <font>
-            <Font size="12.0" />
-         </font></TextField>
-      <CheckBox fx:id="ckbWinterSummerCamp" layoutX="320.0" layoutY="122.0" mnemonicParsing="false" text="冬夏令營" AnchorPane.topAnchor="125.0">
-         <font>
-            <Font size="12.0" />
-         </font></CheckBox>
-      <Label layoutX="246.0" layoutY="123.0" text="*成員所屬" AnchorPane.topAnchor="125.0">
-         <font>
-            <Font size="12.0" />
-         </font>
-      </Label>
-      <CheckBox fx:id="ckbSchoolClub" layoutX="404.0" layoutY="122.0" mnemonicParsing="false" text="學校社團" AnchorPane.topAnchor="125.0">
-         <font>
-            <Font size="12.0" />
-         </font></CheckBox>
-      <CheckBox fx:id="ckbColorClub" layoutX="488.0" layoutY="122.0" mnemonicParsing="false" text="俱樂部" AnchorPane.topAnchor="125.0">
-         <font>
-            <Font size="12.0" />
-         </font></CheckBox>
-      <TextField fx:id="tfMark" layoutX="708.0" layoutY="150.0" prefHeight="23.0" prefWidth="165.0" promptText="有ADHA 症頭" AnchorPane.topAnchor="150.0">
-         <font>
-            <Font size="12.0" />
-         </font></TextField>
-      <Label layoutX="665.0" layoutY="155.0" text="註記" AnchorPane.topAnchor="152.0">
-         <font>
-            <Font size="12.0" />
-         </font>
-      </Label>
-      <ChoiceBox fx:id="cbDepartment" layoutX="319.0" layoutY="152.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="150.0" />
-      <ChoiceBox fx:id="cbCourseKind" layoutX="452.0" layoutY="150.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="150.0" />
-      <ChoiceBox fx:id="cbLevel" layoutX="571.0" layoutY="150.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="150.0" />
-      <ChoiceBox fx:id="cbMemberSchoolDesc" layoutX="691.0" layoutY="55.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="70.0" AnchorPane.topAnchor="52.0" />
    </children>
+   <opaqueInsets>
+      <Insets />
+   </opaqueInsets>
 </AnchorPane>

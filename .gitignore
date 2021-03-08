@@ -3,3 +3,6 @@ bin/
 .classpath
 .project
 backup/
+*.png
+*.log
+log
