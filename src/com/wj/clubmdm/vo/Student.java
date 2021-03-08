@@ -6,7 +6,8 @@
 package com.wj.clubmdm.vo;
 
 public class Student {
-	private String MemberNo;
+	private String seqNo;
+	private String memberNo;
 	private String name;
 	private String id;
 	private String birthday;
@@ -34,11 +35,17 @@ public class Student {
 	private String status;
 	private String createTime;
 	private String updateTime;
+	public String getSeqNo() {
+		return seqNo;
+	}
+	public void setSeqNo(String seqNo) {
+		this.seqNo = seqNo;
+	}
 	public String getMemberNo() {
-		return MemberNo;
+		return memberNo;
 	}
 	public void setMemberNo(String memberNo) {
-		MemberNo = memberNo;
+		this.memberNo = memberNo;
 	}
 	public String getName() {
 		return name;
