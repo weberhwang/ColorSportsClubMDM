@@ -97,7 +97,7 @@ public class Login extends Application {
 	 * 預先抓取學員QRCode並存至Local端
 	 * 只會針對不存在的檔案下載
 	 */
-	private void preGetQRCode() {
+	public void preGetQRCode() {
 		//先將學員編號取出暫存至alStudentNo
 		DBConnectionFactory dbf = new DBConnectionFactory();
 		Connection conn = null;
