@@ -8,11 +8,8 @@
 package com.wj.clubmdm.function;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,27 +17,19 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
-import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-import com.wj.clubmdm.component.BtnDelRollCallUpload;
 import com.wj.clubmdm.vo.QueryStudentCondition;
-import com.wj.clubmdm.vo.RollCallUploadBatch;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import rhinoceros.util.date.SystemTime;
 import rhinoceros.util.db.DBConnectionFactory;
 
