@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +21,8 @@ import javax.imageio.ImageIO;
 import org.apache.log4j.Logger;
 
 import com.wj.clubmdm.component.BtnDelRollCall;
+import com.wj.clubmdm.component.BtnDelStu;
+import com.wj.clubmdm.component.BtnUpdateStu;
 import com.wj.clubmdm.vo.RollCallDetail;
 import com.wj.clubmdm.vo.Student;
 
@@ -33,9 +36,11 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.TableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
@@ -174,6 +179,9 @@ public class StudentMaintainController extends Application {
 
 	@FXML
 	private Button btnExport;// 學員資料查詢結果匯出成報表
+	
+	@FXML
+	private Button btnExpQrPdf;// 學員QR Code匯出成PDF
 
 	@FXML
 	private TableView<Student> tvStudentDetail;// 學員資料查詢表
@@ -194,7 +202,7 @@ public class StudentMaintainController extends Application {
 	private TableColumn<Student, String> colDepartment;// 學員資料查詢＿上課分部
 
 	@FXML
-	private TableColumn<Student, String> colCourceKind;// 學員資料查詢＿課程類別
+	private TableColumn<Student, String> colCourseKind;// 學員資料查詢＿課程類別
 
 	@FXML
 	private TableColumn<Student, String> colLevel;// 學員資料查詢＿程度
@@ -203,8 +211,11 @@ public class StudentMaintainController extends Application {
 	private TableColumn<Student, String> colJoinDate;// 學員資料查詢＿入隊日
 
 	@FXML
-	private TableColumn<Student, String> colEdit;// 學員資料查詢＿編輯操作
+	private TableColumn<Student, BtnUpdateStu> colEdit;// 學員資料查詢＿更新操作
 
+	@FXML
+	private TableColumn<Student, BtnDelStu> colDel;// 學員資料查詢＿刪除操作
+	
 	@FXML
 	private TextField tfResultInfo;// 學員資料查詢＿結果訊息
 
@@ -213,9 +224,10 @@ public class StudentMaintainController extends Application {
 	 */
 	public void initialize() {
 		//建立 新增時 性別,年級,特教生,轉隊生,上課分部,類別,程度,入隊日 下拉選單的清單內容
-		ObservableList<String> sexItems = FXCollections.observableArrayList("男", "女");	
+		ObservableList<String> sexItems = FXCollections.observableArrayList(null,"男", "女");	
 		ObservableList<String> schoolDescItems = FXCollections.observableArrayList
-				("學齡",
+				(null,
+				 "學齡",
 				 "幼小",
 				 "幼中",
 				 "幼大",
@@ -238,9 +250,10 @@ public class StudentMaintainController extends Application {
 				 "成人",
 				 "其它");	
 		ObservableList<String> yesnoItems = FXCollections.observableArrayList("是", "否");	
-		ObservableList<String> departmentItems = FXCollections.observableArrayList("陽光", "仁愛", "隨選");	
-		ObservableList<String> courseKindItems = FXCollections.observableArrayList("競速", "花式", "雙棲");	
-		ObservableList<String> levelItems = FXCollections.observableArrayList("初級", "中級", "高級", "C組", "B組", "A組");	
+		ObservableList<String> departmentItems = FXCollections.observableArrayList(null,"陽光", "仁愛", "隨選");	
+		ObservableList<String> courseKindItems = FXCollections.observableArrayList(null,"競速", "花式", "雙棲");	
+		ObservableList<String> levelItems = FXCollections.observableArrayList(null,"初級", "中級", "高級", "C組", "B組", "A組");	
+		ObservableList<String> StatusItems = FXCollections.observableArrayList(null,"停課","正式","退遂");
 		
 		cbMemberSex.autosize();
 		cbMemberSex.setItems(sexItems);
@@ -265,6 +278,53 @@ public class StudentMaintainController extends Application {
 		cbLevel.autosize();
 		cbLevel.setItems(levelItems);
 		imgvMemberImage.setImage(null);
+		tfResultInfo.setDisable(true);
+		
+		//查詢區塊欄位初始化
+		cbMemberSex_query.autosize();
+		cbMemberSex_query.setItems(sexItems);
+		
+		cbMemberSchoolDesc_query.autosize();
+		cbMemberSchoolDesc_query.setItems(schoolDescItems);
+		
+		cbStatus_query.autosize();
+		cbStatus_query.setItems(StatusItems);
+		
+		cbStatus_query.autosize();
+		cbStatus_query.setItems(StatusItems);
+		
+		cbDepartment_query.autosize();
+		cbDepartment_query.setItems(departmentItems);
+		
+		cbCourseKind_query.autosize();
+		cbCourseKind_query.setItems(courseKindItems);
+		
+		cbLevel_query.autosize();
+		cbLevel_query.setItems(levelItems);
+		
+		//建立學員實體之屬性 與 TableView column 連結
+		colSeq.setCellValueFactory(new PropertyValueFactory<>("seqNo"));
+		colStudentNo.setCellValueFactory(new PropertyValueFactory<>("MemberNo"));
+		colMemberName.setCellValueFactory(new PropertyValueFactory<>("Name"));
+		colMemberSex.setCellValueFactory(new PropertyValueFactory<>("Sex"));
+		colDepartment.setCellValueFactory(new PropertyValueFactory<>("Department"));
+		colCourseKind.setCellValueFactory(new PropertyValueFactory<>("CourseKind"));
+		colLevel.setCellValueFactory(new PropertyValueFactory<>("Level"));
+		colJoinDate.setCellValueFactory(new PropertyValueFactory<>("JoinDate"));		
+		colEdit.setCellValueFactory(new PropertyValueFactory<>("btnUpdate"));
+		colDel.setCellValueFactory(new PropertyValueFactory<>("btnDelete"));
+		
+		//column 內文對齊設定
+		colSeq.setStyle("-fx-alignment: CENTER;");
+		colStudentNo.setStyle("-fx-alignment: CENTER;");
+		colMemberName.setStyle("-fx-alignment: CENTER;");
+		colMemberSex.setStyle("-fx-alignment: CENTER;");
+		colDepartment.setStyle("-fx-alignment: CENTER;");
+		colCourseKind.setStyle("-fx-alignment: CENTER;");
+		colLevel.setStyle("-fx-alignment: CENTER;");
+		colJoinDate.setStyle("-fx-alignment: CENTER;");
+		colEdit.setStyle("-fx-alignment: CENTER;");
+		colDel.setStyle("-fx-alignment: CENTER;");
 	
 	}
 
@@ -777,6 +837,9 @@ public class StudentMaintainController extends Application {
 				imgFileName = givenStudentNo + "_" + tfMemberName.getText().trim();
 				saveImg(imgvMemberImage.getImage(), imgFileName );
 			}
+			
+			Login login = new Login();
+			login.preGetQRCode();
 			alert.setHeaderText("訊息");
 			alert.setContentText("學員新增成功！");
 			alert.showAndWait();
@@ -820,144 +883,261 @@ public class StudentMaintainController extends Application {
 		
 		String joinDateStart = "";
 		String joinDateEnd = "";
+		//Integer winterSumerCamp_query = 0B000;
+		//Integer schoolClub_query = 0B000;//Binary 表示
+		//Integer colorClub_query = 0B000;
+		//Integer selectChk_query = 0B000;
+		//String  memberBelong_query = "";
 		Alert alert = new Alert(Alert.AlertType.WARNING);
-		alert.setTitle("你看看你在幹嘛！");
-		alert.setHeaderText(null);
+		alert.setTitle("訊息");
+		SystemTime st = new SystemTime();
 		
 		tvStudentDetail.getItems().clear(); //清除點名TableView裡的資料
 		
 		String sql = "SELECT " + 
 				     " StudentNo," + 
-				     //" Id," + 
+				     " Id," + 
 				     " Name," +
 					 " (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = b.Sex and d.MainCode = '001') Sex, " + 
-				     //" Address," +
-				     //" School," +
-				     //" ifnull(b.Height, '-')," +
+				     " Address," +
+				     " School," +
+				     " ifnull(b.Height, '-')," +
 					 " (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = b.Level and d.MainCode = '002') Level, " + 
-				     //" Special," +
-				     //" Birthday," +
-					 //" (select ifnull(d.StudyDesc, '') from StudyAge d where d.StudyAgeCode = b.SchoolLevel) SchoolLevel, " + 
-				     //" SchoolConfirmDate," +
-					 //" ifnull(b.SchoolLevelEstimate, '-')," +
-					 //" case " +
-					 //" when substr(MemberBelong,1,3) = '100' then '冬夏令營' " +
-					 //" when substr(MemberBelong,1,3) = '010' then '學校社團' " +
-					 //" when substr(MemberBelong,1,3) = '001' then '俱樂部' " +
-					 //" when substr(MemberBelong,1,3) = '110' then '冬夏令營 學校社團' " +
-					 //" when substr(MemberBelong,1,3) = '101' then '冬夏令營 俱樂部' " +
-					 //" when substr(MemberBelong,1,3) = '111' then '冬夏令營 學校社團 俱樂部' "+
-					 //" when substr(MemberBelong,1,3) = '011' then '學校社團 俱樂部' " +
-					 //" ELSE 'Error' " +
-					 //" END as MemberBelong, " +
-				     //" Transfer," +
+				     " Special," +
+				     " Birthday," +
+					 " (select ifnull(d.StudyDesc, '') from StudyAge d where d.StudyAgeCode = b.SchoolLevel) SchoolLevel, " + 
+				     " SchoolConfirmDate," +
+					 " ifnull(b.SchoolLevelEstimate, '-')," +
+					 " case " +
+					 " when substr(MemberBelong,1,3) = '100' then '冬夏令營' " +
+					 " when substr(MemberBelong,1,3) = '010' then '學校社團' " +
+					 " when substr(MemberBelong,1,3) = '001' then '俱樂部' " +
+					 " when substr(MemberBelong,1,3) = '110' then '冬夏令營 學校社團' " +
+					 " when substr(MemberBelong,1,3) = '101' then '冬夏令營 俱樂部' " +
+					 " when substr(MemberBelong,1,3) = '111' then '冬夏令營 學校社團 俱樂部' "+
+					 " when substr(MemberBelong,1,3) = '011' then '學校社團 俱樂部' " +
+					 " ELSE 'Error' " +
+					 " END as MemberBelong, " +
+				     " Transfer," +
 				     " JoinDate," +
-				     //" LeaveDate," +
+				     " LeaveDate," +
 					 " (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = b.Department and d.MainCode = '004') Department, " + 
-					 " (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = b.CourseKind and d.MainCode = '005') CourseKind " + 
-				     //" ifnull(b.Guardian_1, '-') Guardian_1," +
-				     //" ifnull(b.ContactTEL_1, '-') ContactTEL_1," +
-				     //" ifnull(b.Guardian_2, '-') Guardian_2," +
-				     //" ifnull(b.ContactTEL_2, '-') ContactTEL_2," +
-					 //" (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = b.Status and d.MainCode = '006') Status, " + 
-				     //" CreateTime," +
-				     //" UpdateTime " +
+					 " (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = b.CourseKind and d.MainCode = '005') CourseKind, " + 
+				     " ifnull(b.Guardian_1, '-') Guardian_1," +
+				     " ifnull(b.ContactTEL_1, '-') ContactTEL_1," +
+				     " ifnull(b.Guardian_2, '-') Guardian_2," +
+				     " ifnull(b.ContactTEL_2, '-') ContactTEL_2," +
+					 " (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = b.Status and d.MainCode = '006') Status, " + 
+				     " CreateTime," +
+				     " UpdateTime " +
 				     "FROM " + 
 				     "  Student b " + 
 				     "WHERE 1 = 1 ";
-		/*	     
-		if(dpJoinDateStart.getValue() != null) {
-			for (String s : dpJoinDateStart.getValue().toString().split("-")) {
-				joinDateStart += s;
-			}
-			for (String e : dpJoinDateEnd.getValue().toString().split("-")) {
-				joinDateEnd += e;
-			}
-		 sql +=  " and b.JoinDate between " + "'" + joinDateStart + "'" + " and " + "'" + joinDateEnd + "'" ;
-		} 
+		
+		/*
+		if (tfStudentNo_query.getText().trim().length() > 0) {
+			 sql += " and b.StudentNo = ?" ;
+		}*/
 		
 		if (tfStudentNo_query.getText().trim().length() > 0) {
-		 sql += " and b.StudentNo = ?";
-		}*/
-		/*
-		if (cbSpecial.getValue().equalsIgnoreCase("非特色")) {
-			sql += " and a.Special = '01' ";
-		} else if (cbSpecial.getValue().equalsIgnoreCase("馬拉松")) {
-			sql += " and a.Special = '02' ";
-		} else if (cbSpecial.getValue().equalsIgnoreCase("基礎動作")) {
-			sql += " and a.Special = '03' ";
-		} else if (cbSpecial.getValue().equalsIgnoreCase("外師授課")) {
-			sql += " and a.Special = '04' ";
-		} else if (cbSpecial.getValue().equalsIgnoreCase("其它")) {
-			sql += " and a.Special = '99' ";
+			 sql += " and b.StudentNo = " + " '"+ tfStudentNo_query.getText().trim()+"' ";
 		}
 		
-		if (cbLevel.getValue().equalsIgnoreCase("初級")) {
-			sql += " and a.Level = '01' ";
-		} else if (cbLevel.getValue().equalsIgnoreCase("中級")) {
-			sql += " and a.Level = '02' ";			
-		} else if (cbLevel.getValue().equalsIgnoreCase("高級")) {
-			sql += " and a.Level = '03' ";						
-		} else if (cbLevel.getValue().equalsIgnoreCase("C組")) {
-			sql += " and a.Level = '04' ";						
-		} else if (cbLevel.getValue().equalsIgnoreCase("B組")) {
-			sql += " and a.Level = '05' ";						
-		} else if (cbLevel.getValue().equalsIgnoreCase("A組")) {
-			sql += " and a.Level = '06' ";						
+		if (tfMemberName_query.getText().trim().length() > 0) {
+			 sql += " and b.Name like " + " '%"+ tfMemberName_query.getText().trim()+"%' ";
 		}
 		
-		if (tfIDValue.getText().trim().length() > 0) {
-			if (cbID.getValue().equalsIgnoreCase("學員編號")) {
-				sql += " and a.StudentNo = ?";
-			} else if (cbID.getValue().equalsIgnoreCase("身份證字號")) {
-				sql += " and b.ID = ?";
-			} else if (cbID.getValue().equalsIgnoreCase("姓名")) {
-				sql += " and b.Name like %?%";
+		if (tfMemberSchool_query.getText().trim().length() > 0) {
+			 sql += " and b.School like " + " '%"+ tfMemberSchool_query.getText().trim()+"%' ";
+		}
+		
+		if(cbMemberSex_query.getValue() != null) {
+			if(cbMemberSex_query.getValue().equalsIgnoreCase("男")) {
+				sql += " and b.Sex = 'M' ";
+			}
+			else {
+				sql += " and b.Sex = 'F' ";
 			}
 		}
 		
-		if (cbDepartment.getValue().equalsIgnoreCase("仁愛")) {
-			sql += " and a.Department = '01' ";
-		} else if (cbDepartment.getValue().equalsIgnoreCase("陽光")) {
-			sql += " and a.Department = '02' ";			
-		} else if (cbDepartment.getValue().equalsIgnoreCase("隨選")) {
-			sql += " and a.Department = '99' ";						
-		} 						
-		
-		if (cbCourseKind.getValue().equalsIgnoreCase("花式")) {
-			sql += " and a.CourseKind = '01' ";
-		} else if (cbCourseKind.getValue().equalsIgnoreCase("競速")) {
-			sql += " and a.CourseKind = '02' ";			
-		} else if (cbCourseKind.getValue().equalsIgnoreCase("雙棲")) {
-			sql += " and a.CourseKind = '03' ";
+		if(cbMemberSchoolDesc_query.getValue() != null) {
+			if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("學齡")) {
+				sql += " and b.SchoolLevel = '902' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("幼小")){
+				sql += " and b.SchoolLevel = '903' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("幼中")){
+				sql += " and b.SchoolLevel = '904' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("幼大")){
+				sql += " and b.SchoolLevel = '905' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("小一")){
+				sql += " and b.SchoolLevel = '906' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("小二")){
+				sql += " and b.SchoolLevel = '907' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("小三")){
+				sql += " and b.SchoolLevel = '908' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("小四")){
+				sql += " and b.SchoolLevel = '909' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("小五")){
+				sql += " and b.SchoolLevel = '910' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("小六")){
+				sql += " and b.SchoolLevel = '911' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("國一")){
+				sql += " and b.SchoolLevel = '912' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("國二")){
+				sql += " and b.SchoolLevel = '913' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("國三")){
+				sql += " and b.SchoolLevel = '914' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("高一")){
+				sql += " and b.SchoolLevel = '915' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("高二")){
+				sql += " and b.SchoolLevel = '916' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("高三")){
+				sql += " and b.SchoolLevel = '917' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("大一")){
+				sql += " and b.SchoolLevel = '918' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("大二")){
+				sql += " and b.SchoolLevel = '919' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("大三")){
+				sql += " and b.SchoolLevel = '920' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("大四")){
+				sql += " and b.SchoolLevel = '921' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("成人")){
+				sql += " and b.SchoolLevel = '922' ";
+			}
+			else if(cbMemberSchoolDesc_query.getValue().equalsIgnoreCase("其它")){
+				sql += " and b.SchoolLevel = '999' ";
+			}
 		}
 		
-		if (ckbMemberBelongAll.isSelected()) {
-			
-		} else {
-			if (ckbMemberBelong1.isSelected() || ckbMemberBelong2.isSelected() || ckbMemberBelong3.isSelected()) {
-				sql += " and (";
-				if (ckbMemberBelong1.isSelected()) {
-					sql += " substr(b.MemberBelong,1,1) = '1' or";
-				}
-				if (ckbMemberBelong2.isSelected()) {
-					sql += " substr(b.MemberBelong,2,1) = '1' or";
-				}
-				if (ckbMemberBelong3.isSelected()) {
-					sql += " substr(b.MemberBelong,3,1) = '1' or";
-				}
-				//移除最後一個「or」符號
-				if (sql.endsWith("or")) {
-					sql = sql.substring(0, sql.length() - 2);
-				} 
-				sql += ")";				
-			} else {
-				//若沒有||符號出現，代表條件有問題，至少要選一個
-				alert.setContentText("「成員所屬」請至少選擇一個條件");
+		if(cbStatus_query.getValue() != null) {
+			if(cbStatus_query.getValue().equalsIgnoreCase("停課")) {
+				sql += " and b.Status = 'S' ";
+			}
+			else if(cbStatus_query.getValue().equalsIgnoreCase("正式")){
+				sql += " and b.Status = 'N' ";
+			}
+			else if(cbStatus_query.getValue().equalsIgnoreCase("退遂")){
+				sql += " and b.Status = 'L' ";
+			}
+		}
+		
+		if(cbDepartment_query.getValue() != null) {
+			if(cbDepartment_query.getValue().equalsIgnoreCase("仁愛")) {
+				sql += " and b.Department = '01' ";
+			}
+			else if(cbDepartment_query.getValue().equalsIgnoreCase("陽光")){
+				sql += " and b.Department = '02' ";
+			}
+			else if(cbDepartment_query.getValue().equalsIgnoreCase("隨選")){
+				sql += " and b.Department = '99' ";
+			}
+		}
+		
+		if(cbCourseKind_query.getValue() != null) {
+			if(cbCourseKind_query.getValue().equalsIgnoreCase("花式")) {
+				sql += " and b.CourseKind = '01' ";
+			}
+			else if(cbCourseKind_query.getValue().equalsIgnoreCase("競速")){
+				sql += " and b.CourseKind = '02' ";
+			}
+			else if(cbCourseKind_query.getValue().equalsIgnoreCase("雙棲")){
+				sql += " and b.CourseKind = '03' ";
+			}
+		}
+		
+		if(cbLevel_query.getValue() != null) {
+			if(cbLevel_query.getValue().equalsIgnoreCase("初級")) {
+				sql += " and b.Level = '01' ";
+			}
+			else if(cbLevel_query.getValue().equalsIgnoreCase("中級")){
+				sql += " and b.Level = '02' ";
+			}
+			else if(cbLevel_query.getValue().equalsIgnoreCase("高級")){
+				sql += " and b.Level = '03' ";
+			}
+			else if(cbLevel_query.getValue().equalsIgnoreCase("C組")){
+				sql += " and b.Level = '04' ";
+			}
+			else if(cbLevel_query.getValue().equalsIgnoreCase("B組")){
+				sql += " and b.Level = '05' ";
+			}
+			else if(cbLevel_query.getValue().equalsIgnoreCase("A組")){
+				sql += " and b.Level = '06' ";
+			}
+		}
+		
+		if (ckbWinterSumerCamp_query.isSelected() || ckbSchoolClub_query.isSelected() || ckbColorClub_query.isSelected()) {
+			   if (ckbWinterSumerCamp_query.isSelected()) {
+				   //winterSumerCamp_query = 0B100;
+				   sql += " and b.MemberBelong like " + " '1%' ";
+			   }
+			   
+			   if (ckbSchoolClub_query.isSelected()) {
+				   //schoolClub_query = 0B010;
+				   sql += " and b.MemberBelong like " + " '_1________' ";
+			   }
+			   
+			   if (ckbColorClub_query.isSelected()) {
+				   //colorClub_query = 0B001;
+				   sql += " and b.MemberBelong like " + " '__1_______' ";
+			   }
+			//selectChk_query = (winterSumerCamp_query | schoolClub_query | colorClub_query);
+			//memberBelong_query = String.format("%3s", Integer.toBinaryString(selectChk_query)).replace(' ', '0')+ "0000000";
+			//sql += " and b.MemberBelong = " + " '" + memberBelong_query + "' ";
+		}
+		
+		if (dpJoinDateStart.getValue() != null) {
+			if (dpJoinDateEnd.getValue() == null) {
+				alert.setHeaderText("查詢迄日不得為空值！");
 				alert.showAndWait();
+				//System.out.print("迄日不得為空值！");
+				return;
+			} 
+			if (dpJoinDateStart.getValue().isBefore(dpJoinDateEnd.getValue())) {
+				for (String s : dpJoinDateStart.getValue().toString().split("-")) {
+					joinDateStart += s;
+				}
+				for (String e : dpJoinDateEnd.getValue().toString().split("-")) {
+					joinDateEnd += e;
+				}
+				sql += " and b.JoinDate between " + "'" + joinDateStart + "'" + " and " + "'" + joinDateEnd + "'";
+				System.out.print(sql);
+			} else {
+				alert.setHeaderText("輸入起日不得大於迄日！");
+				alert.showAndWait();
+				//System.out.print("輸入起日不得大於迄日！");
 				return;
 			}
-		}*/
+		} 
+		if (dpJoinDateEnd.getValue() != null) {
+			if (dpJoinDateStart.getValue() == null) {
+				alert.setHeaderText("查詢起日不得為空值！");
+				alert.showAndWait();
+				//System.out.print("查詢起日不得為空值！");
+				return;
+			} 
+		}
+
 		
 		DBConnectionFactory dbf = new DBConnectionFactory();
 		Connection conn = null;
@@ -965,54 +1145,56 @@ public class StudentMaintainController extends Application {
 		ResultSet rs = null;
 		Integer seqNo = 0;
 		try {		
-			Student stu = null;  
-			//BtnDelRollCall btnDel = null;
+			Student stu = null;
+			BtnUpdateStu btnUpd = null;
+			BtnDelStu btnDel = null;	
 			conn = dbf.getSQLiteCon("", "Club.dll");
 			pstmt = conn.prepareStatement(sql);
 			pstmt.clearParameters();
-			//pstmt.setString(1, dpChoiceRollCallDateBegin.getValue().toString()); //點名時間(起)
-			//pstmt.setString(2, dpChoiceRollCallDateEnd.getValue().toString()); //點名時間(迄)
-			//if (tfIDValue.getText().length() > 0) {
-			//	pstmt.setString(3, tfIDValue.getText().trim()); //點名篩選條件值				
-			//}			
+			//pstmt.setString(1, tfStudentNo_query.getText().trim());		
 			rs = pstmt.executeQuery();
 			while (rs.next()) {
 				seqNo++;
 				stu = new Student();
-				//stu.setSeqNo(String.format("%07d", seqNo));
+			    stu.setSeqNo(String.format("%01d", seqNo));
 				stu.setMemberNo(rs.getString("StudentNo"));
 				stu.setName(rs.getString("Name"));
 				stu.setSex(rs.getString("Sex"));
 				stu.setDepartment(rs.getString("Department"));
 				stu.setCourseKind(rs.getString("CourseKind"));
 				stu.setLevel(rs.getString("Level"));
-				stu.setJoinDate(rs.getString("JoinDate"));
-				/*
-				rcd.setSeqNo(String.format("%07d", seqNo));
-				rcd.setStudentNo(rs.getString("StudentNo"));
-				rcd.setName(rs.getString("Name"));
-				rcd.setDepartment(rs.getString("DepartmentDesc"));
-				rcd.setCourseKind(rs.getString("CourseKindDesc"));
-				rcd.setLevel(rs.getString("LevelDesc"));
-				rcd.setRollCallTime(rs.getString("RollCallTime"));
-				rcd.setSpecial(rs.getString("SpecialDesc"));
-				rcd.setMemberBelong(rs.getString("MemberBelong"));
-				*/
-				/*
-				//建立刪除點名資料按鈕
-				btnDel = new BtnDelRollCall();
-				btnDel.autosize();
-				btnDel.setText("刪除");
-				btnDel.setStudentNo(rs.getString("StudentNo"));
-				btnDel.setRollCallTime(rs.getString("RollCallTime"));
-				btnDel.setOnAction(new EventHandler<ActionEvent>() {
+				stu.setJoinDate(rs.getString("JoinDate").substring(0, 4) + "-" + rs.getString("JoinDate").substring(4, 6) + "-" + rs.getString("JoinDate").substring(6));
+				
+				//建立更新學員資料按鈕
+				btnUpd = new BtnUpdateStu();
+				btnUpd.autosize();
+				btnUpd.setStyle("-fx-background-color: Gray;-fx-text-fill: white;");
+				btnUpd.setText("修改");
+				//btnDel.setStudentNo(rs.getString("StudentNo"));
+				//btnDel.setName(rs.getString("Name"));
+				btnUpd.setOnAction(new EventHandler<ActionEvent>() {
 			        public void handle(ActionEvent event) {
-			        	BtnDelRollCall btnDel = (BtnDelRollCall)event.getSource();
-			        	delRollCallDetail(btnDel);
+			        	BtnUpdateStu btnUpd = (BtnUpdateStu)event.getSource();
+			        	alert.showAndWait();
+			        	//delStudentDetail(btnDel);//呼叫刪除的方法
 			        }
 			    });
-				rcd.setBtnDelete(btnDel);
-				*/
+				//建立刪除學員資料按鈕
+				btnDel = new BtnDelStu();
+				btnDel.autosize();
+				btnDel.setStyle("-fx-background-color: Gray;-fx-text-fill: white;");
+				btnDel.setText("刪除");
+				//btnDel.setStudentNo(rs.getString("StudentNo"));
+				//btnDel.setName(rs.getString("Name"));
+				btnDel.setOnAction(new EventHandler<ActionEvent>() {
+			        public void handle(ActionEvent event1) {
+			        	BtnDelStu btnDel = (BtnDelStu)event1.getSource();
+			        	alert.showAndWait();
+			        	//delStudentDetail(btnDel);//呼叫刪除的方法
+			        }
+			    });
+				stu.setBtnUpdate(btnUpd);
+				stu.setBtnDelete(btnDel);
 			    tvStudentDetail.getItems().add(stu);
 			}	
 		} catch (Exception e) {
@@ -1033,7 +1215,8 @@ public class StudentMaintainController extends Application {
 			} catch (Exception e) {
 				logger.info(e.getMessage(), e);
 			}
-		}		
+		}
+	    tfResultInfo.setText(st.getNowTime("yyyy-MM-dd HH:mm:ss") + " 查詢到" + seqNo + "筆會員資料");
 	}
 
 } 

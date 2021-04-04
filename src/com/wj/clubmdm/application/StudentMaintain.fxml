@@ -205,7 +205,7 @@
                </font></Button>
          </children>
       </HBox>
-      <SplitPane dividerPositions="0.3065326633165829" layoutX="44.0" layoutY="223.0" orientation="VERTICAL" prefHeight="400.0" prefWidth="1100.0" AnchorPane.topAnchor="223.0">
+      <SplitPane dividerPositions="0.2914572864321608" layoutX="44.0" layoutY="223.0" orientation="VERTICAL" prefHeight="400.0" prefWidth="1100.0" AnchorPane.topAnchor="223.0">
          <items>
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="108.0" prefWidth="1098.0">
                <children>
@@ -307,27 +307,29 @@
                      </font>
                   </Label>
                   <DatePicker fx:id="dpJoinDateEnd" layoutX="951.0" layoutY="45.0" prefHeight="25.0" prefWidth="115.0" AnchorPane.topAnchor="45.0" />
-                  <HBox alignment="BOTTOM_CENTER" layoutX="460.0" layoutY="80.0" prefHeight="27.0" prefWidth="189.0" AnchorPane.leftAnchor="460.0" AnchorPane.topAnchor="80.0">
+                  <HBox alignment="BOTTOM_CENTER" layoutX="435.0" layoutY="79.0" prefHeight="27.0" prefWidth="359.0" AnchorPane.leftAnchor="435.0" AnchorPane.topAnchor="79.0">
                      <children>
-                        <Button fx:id="btnQuery" defaultButton="true" mnemonicParsing="false" onAction="#queryStudentList" prefHeight="34.0" prefWidth="60.0" style="-fx-background-color: BLACK;" text="查詢" textFill="WHITE" />
-                        <Button fx:id="btnExport" defaultButton="true" mnemonicParsing="false" prefHeight="28.0" prefWidth="60.0" style="-fx-background-color: GRAY;" text="產出名單" textFill="WHITE" />
+                        <Button fx:id="btnQuery" defaultButton="true" mnemonicParsing="false" onAction="#queryStudentList" prefHeight="27.0" prefWidth="60.0" style="-fx-background-color: BLACK;" text="查詢" textFill="WHITE" />
+                        <Button fx:id="btnExport" defaultButton="true" mnemonicParsing="false" prefHeight="27.0" prefWidth="100.0" style="-fx-background-color: GRAY;" text="產出學員名單" textFill="WHITE" />
+                        <Button fx:id="btnExpQrPdf" defaultButton="true" mnemonicParsing="false" prefHeight="27.0" prefWidth="100.0" style="-fx-background-color: Brown;" text="產出QR Code " textFill="WHITE" />
                      </children>
                   </HBox>
                </children>
             </AnchorPane>
             <AnchorPane minHeight="0.0" minWidth="0.0">
                <children>
-                  <TableView fx:id="tvStudentDetail" layoutX="-1.0" prefHeight="371.0" prefWidth="1100.0">
+                  <TableView fx:id="tvStudentDetail" layoutX="-1.0" layoutY="-1.0" prefHeight="280.0" prefWidth="1100.0">
                      <columns>
                         <TableColumn fx:id="colSeq" prefWidth="76.0" text="序號" />
                         <TableColumn fx:id="colStudentNo" prefWidth="103.0" text="學員編號" />
                         <TableColumn fx:id="colMemberName" prefWidth="144.0" text="姓名" />
                         <TableColumn fx:id="colMemberSex" prefWidth="57.0" text="性別" />
                         <TableColumn fx:id="colDepartment" prefWidth="94.0" text="上課分部" />
-                        <TableColumn fx:id="colCourceKind" prefWidth="94.0" text="類別" />
+                        <TableColumn fx:id="colCourseKind" prefWidth="94.0" text="類別" />
                         <TableColumn fx:id="colLevel" prefWidth="103.0" text="程度" />
-                        <TableColumn fx:id="colJoinDate" prefWidth="209.0" text="入隊日" />
-                        <TableColumn fx:id="colEdit" prefWidth="203.0" text="編輯" />
+                        <TableColumn fx:id="colJoinDate" prefWidth="196.0" text="入隊日" />
+                        <TableColumn fx:id="colEdit" prefWidth="117.0" text="更新" />
+                        <TableColumn fx:id="colDel" prefWidth="118.0" text="移除" />
                      </columns>
                   </TableView>
                </children>
