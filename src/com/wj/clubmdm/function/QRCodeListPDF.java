@@ -90,7 +90,8 @@ public class QRCodeListPDF {
 			if (!firstCondition) {
 				sql.append(" and ");
 			}
-			sql.append("Status = '" + queryStudentCondition.getStatus().trim() + "' ");
+			sql.append(" Status = '" + queryStudentCondition.getStatus().trim() + "' ");
+			firstCondition = false;
 		}
 			
 		// 課程類別
@@ -100,6 +101,7 @@ public class QRCodeListPDF {
 				sql.append(" and ");
 			}
 			sql.append(" CourseKind = '" + queryStudentCondition.getCourseKind().trim() + "' ");
+			firstCondition = false;
 		}
 		
 		// 上課分部
@@ -109,16 +111,18 @@ public class QRCodeListPDF {
 				sql.append(" and ");
 			}
 			sql.append(" Department = '" + queryStudentCondition.getDepartment().trim() + "' ");
+			firstCondition = false;
 		}
 		
 		// 入隊日區間
-		if (queryStudentCondition.getJoinDateStr() == null || queryStudentCondition.getJoinDateEnd().trim().length() <=0 ||
+		if (queryStudentCondition.getJoinDateStr() == null || queryStudentCondition.getJoinDateStr().trim().length() <=0 ||
 		    queryStudentCondition.getJoinDateEnd() == null || queryStudentCondition.getJoinDateEnd().trim().length() <=0) {			
 		} else {
 			if (!firstCondition) {
 				sql.append(" and ");
 			}
 			sql.append(" JoinDate >= '" + queryStudentCondition.getJoinDateStr().trim() + "' and JoinDate <= '" + queryStudentCondition.getJoinDateEnd().trim() + "' ");				
+			firstCondition = false;
 		}
 		
         // 程度
@@ -137,6 +141,7 @@ public class QRCodeListPDF {
 				sql.append(" and ");
 			}
 			sql.append(" MemberBelong = '" + queryStudentCondition.getMemberBelong().trim() + "' ");
+			firstCondition = false;
 		}
 		
 		// 姓名(用like)
@@ -146,6 +151,7 @@ public class QRCodeListPDF {
 				sql.append(" and ");
 			}
 			sql.append(" Name like '%" + queryStudentCondition.getName().trim() + "%' ");
+			firstCondition = false;
 		}
 		
 		// 學校(用like)
@@ -155,6 +161,7 @@ public class QRCodeListPDF {
 				sql.append(" and ");
 			}
 			sql.append(" School like '%" + queryStudentCondition.getSchool().trim() + "%' ");
+			firstCondition = false;
 		}
 		
 		// 學齡
@@ -164,6 +171,7 @@ public class QRCodeListPDF {
 				sql.append(" and ");
 			}
 			sql.append(" SchoolLevel = " + queryStudentCondition.getSchoolLevel() + " ");
+			firstCondition = false;
 		}
 		
 		// 性別
@@ -173,16 +181,18 @@ public class QRCodeListPDF {
 				sql.append(" and ");
 			}
 			sql.append(" Sex = '" + queryStudentCondition.getSex().trim() + "' ");
+			firstCondition = false;
 		}
 		
 		// 學員編號
 		if (queryStudentCondition.getStudentNo() == null || queryStudentCondition.getStudentNo().trim().length() <=0) {			
 		} else {
 			sql.append(" StudentNo = '" + queryStudentCondition.getStudentNo().trim() + "' ");
+			firstCondition = false;
 		}
 		
 		sql.append(" ORDER BY StudentNo ");
-		
+				
 		DBConnectionFactory dbf = new DBConnectionFactory();
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -280,7 +290,7 @@ public class QRCodeListPDF {
 		}
 		
 		StringBuffer sbLine1 = new StringBuffer();
-		sbLine1.append("            檔案: " + pdfFileName + "       頁碼:" + currentPageNumber + "/" + totalPageNumber);
+		sbLine1.append("　　　　　　　檔案: " + pdfFileName + "　　　　頁碼:" + currentPageNumber + "/" + totalPageNumber);
 		Paragraph pgLine1 = new Paragraph(new Chunk(sbLine1.toString(), fontBlackBigCN));
 		
 		ArrayList<String> desc = translationOfCondition();
@@ -308,7 +318,7 @@ public class QRCodeListPDF {
 	public ArrayList<String> translationOfCondition(){
 		ArrayList<String> conditionDesc = new ArrayList<String>();
 		StringBuffer sb1 = new StringBuffer();
-		sb1.append("                 【條件】 ");
+		sb1.append("　　　　　　　　　　【條件】　");
 		
 		// 上課分部
 		if (queryStudentCondition.getDepartment() == null || queryStudentCondition.getDepartment().trim().length() <= 0) {			
@@ -342,9 +352,9 @@ public class QRCodeListPDF {
 		
 		// 學員編號
 		if (queryStudentCondition.getStudentNo() == null || queryStudentCondition.getStudentNo().trim().length() <= 0) {			
-			sb2.append("                          學員編號:[無]  ");			
+			sb2.append("　　　　　　　　　　　　　　　學員編號:[無]  ");			
 		} else {
-			sb2.append("                          學員編號:" + queryStudentCondition.getStudentNo() + "  ");			
+			sb2.append("　　　　　　　　　　　　　　　學員編號:" + queryStudentCondition.getStudentNo() + "  ");			
 		}		
 
 		// 姓名
@@ -383,9 +393,9 @@ public class QRCodeListPDF {
 		// 入隊日
 		if (queryStudentCondition.getJoinDateStr() == null || queryStudentCondition.getJoinDateStr().trim().length() <= 0 ||
 			queryStudentCondition.getJoinDateEnd() == null || queryStudentCondition.getJoinDateEnd().trim().length() <= 0 ) {			
-			sb3.append("                          入隊日:[無]  ");			
+			sb3.append("　　　　　　　　　　　　　　　入隊日:[無]  ");			
 		} else {
-			sb3.append("                          入隊日:" + queryStudentCondition.getJoinDateStr() + "～" + queryStudentCondition.getJoinDateEnd() + "  ");
+			sb3.append("　　　　　　　　　　　　　　　入隊日:" + queryStudentCondition.getJoinDateStr() + "～" + queryStudentCondition.getJoinDateEnd() + "  ");
 		}
 
 		// 成員所屬
@@ -684,6 +694,9 @@ public class QRCodeListPDF {
 		 * qsc.setStudentNo("A000001"); // 學員編號
 		 */
 		qsc.setStatus("N");
+		qsc.setJoinDateStr("19000331"); // 入隊日(起)
+		qsc.setJoinDateEnd("20211231"); // 入隊日(迄) 
+
 		//qsc.setStudentNo("A000001"); // 學員編號
 		
 		QRCodeListPDF qlPDF = new QRCodeListPDF();
