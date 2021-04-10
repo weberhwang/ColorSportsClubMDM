@@ -23,7 +23,10 @@ import org.apache.log4j.Logger;
 import com.wj.clubmdm.component.BtnDelRollCall;
 import com.wj.clubmdm.component.BtnDelStu;
 import com.wj.clubmdm.component.BtnUpdateStu;
+import com.wj.clubmdm.function.QRCodeListPDF;
+import com.wj.clubmdm.vo.QueryStudentCondition;
 import com.wj.clubmdm.vo.RollCallDetail;
+import com.wj.clubmdm.vo.RollCallUploadDetail;
 import com.wj.clubmdm.vo.Student;
 
 import javafx.application.Application;
@@ -33,6 +36,8 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -40,10 +45,13 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import rhinoceros.util.date.SystemTime;
 import rhinoceros.util.db.DBConnectionFactory;
@@ -53,7 +61,8 @@ import javafx.scene.control.TableView;
 public class StudentMaintainController extends Application {
 
 	private Logger logger = Logger.getLogger(StudentMaintainController.class);
-
+	private Stage subStage; //獨佔彈跳視窗共用Stage
+	
 	@FXML
 	private TextField tfMemberName;// 學員資料新增＿姓名
 
@@ -223,6 +232,9 @@ public class StudentMaintainController extends Application {
 	 * 初始化
 	 */
 	public void initialize() {
+		
+		subStage = new Stage();
+		subStage.initModality(Modality.APPLICATION_MODAL);
 		//建立 新增時 性別,年級,特教生,轉隊生,上課分部,類別,程度,入隊日 下拉選單的清單內容
 		ObservableList<String> sexItems = FXCollections.observableArrayList(null,"男", "女");	
 		ObservableList<String> schoolDescItems = FXCollections.observableArrayList
@@ -1173,9 +1185,11 @@ public class StudentMaintainController extends Application {
 				//btnDel.setStudentNo(rs.getString("StudentNo"));
 				//btnDel.setName(rs.getString("Name"));
 				btnUpd.setOnAction(new EventHandler<ActionEvent>() {
-			        public void handle(ActionEvent event) {
+			        @Override
+					public void handle(ActionEvent event) {
 			        	BtnUpdateStu btnUpd = (BtnUpdateStu)event.getSource();
-			        	alert.showAndWait();
+			        	updateStudentDetail();
+			        	//alert.showAndWait();
 			        	//delStudentDetail(btnDel);//呼叫刪除的方法
 			        }
 			    });
@@ -1186,13 +1200,37 @@ public class StudentMaintainController extends Application {
 				btnDel.setText("刪除");
 				//btnDel.setStudentNo(rs.getString("StudentNo"));
 				//btnDel.setName(rs.getString("Name"));
+				/*
+				 * JavaFx 處理事件的方式有四種 :
+				 * 1.setOnXXX() 設定處理事件的Event Handler
+				 * 2.addEventHandler() 註冊事件的Event Handler
+				 * 3.addEventFilter()  註冊事件的Event Handler
+				 * 4.以Lambda Expression 省略Event Handler 介面的描述
+				 * 
+				 * 1.的語法說明： setOnXXX(new EventHandler<EventType>(){
+				 * 		@Override public void handle(EventType e){
+				 * 		... }
+				 * });
+				 * */
+				/* 第一種寫法 
+				 * btnDel.setOnAction(btnDelActionHandler);
+				 * EventHandler btnDelActionHandler = new EventHandler<ActionEvent() {
+				 * @Override public void handle() {
+				 * 		BtnDelStu btnDel = (BtnDelStu)event1.getSource();
+			        	alert.showAndWait();
+			        	//delStudentDetail(btnDel);//呼叫刪除的方法
+				 * 		}
+				 * }>*/
+				// 第二種寫法
 				btnDel.setOnAction(new EventHandler<ActionEvent>() {
+			        @Override
 			        public void handle(ActionEvent event1) {
 			        	BtnDelStu btnDel = (BtnDelStu)event1.getSource();
 			        	alert.showAndWait();
 			        	//delStudentDetail(btnDel);//呼叫刪除的方法
 			        }
 			    });
+				
 				stu.setBtnUpdate(btnUpd);
 				stu.setBtnDelete(btnDel);
 			    tvStudentDetail.getItems().add(stu);
@@ -1218,5 +1256,230 @@ public class StudentMaintainController extends Application {
 		}
 	    tfResultInfo.setText(st.getNowTime("yyyy-MM-dd HH:mm:ss") + " 查詢到" + seqNo + "筆會員資料");
 	}
+	
+	public void exportQrPdf() {
+		String joinDateStart = "20210405";
+		String joinDateEnd = "20210406";
+		Alert alert = new Alert(Alert.AlertType.INFORMATION);
+		alert.setTitle("訊息");
+		QueryStudentCondition qsc = new QueryStudentCondition();
+		//qsc.setStatus("N"); // Default 查詢欄位皆未選擇的情況下以狀態：正常 產出QR Code PDF
+		qsc.setStudentNo(tfStudentNo_query.getText().trim()); // 學員編號
+		qsc.setName(tfMemberName_query.getText().trim()); // 姓名
+		/*
+		if(cbMemberSex_query.getValue() == "男") {
+			qsc.setSex("M");
+		} else if (cbMemberSex_query.getValue() == "女") {
+			qsc.setSex("F");
+		}// 性別*/
+		
+		//qsc.setSchool("台中市光復國小"); // 就讀學校
+		//qsc.setSchoolLevel(906); // 學齡
+		//qsc.setStatus("N"); // 狀態
+		//qsc.setMemberBelong("1100000000"); // 成員所屬
+		//qsc.setDepartment("02"); // 上課分部
+		//qsc.setCourseKind("01"); // 課程類別
+		//qsc.setLevel("01"); // 程度
+		qsc.setJoinDateStr("20210331"); // 入隊日(起)
+		qsc.setJoinDateEnd("20210401"); // 入隊日(迄) 
+		/*
+		if (dpJoinDateStart.getValue() != null) {
+			if (dpJoinDateEnd.getValue() == null) {
+				alert.setHeaderText("查詢迄日不得為空值！");
+				alert.showAndWait();
+				return;
+			} 
+			if (dpJoinDateStart.getValue().isBefore(dpJoinDateEnd.getValue())) {
+				
+				for (String s : dpJoinDateStart.getValue().toString().split("-")) {
+					joinDateStart += s;
+				} 
+				for (String e : dpJoinDateEnd.getValue().toString().split("-")) {
+					joinDateEnd += e;
+				} 
+				System.out.println(joinDateStart + '\n');			
+				System.out.println(joinDateEnd+ '\n');			
+				qsc.setJoinDateStr(joinDateStart);
+				qsc.setJoinDateEnd(joinDateEnd);
+	
+			} else {
+				alert.setHeaderText("輸入起日不得大於迄日！");
+				alert.showAndWait();
+				return;
+			}
+		} 
+		if (dpJoinDateEnd.getValue() != null) {
+			if (dpJoinDateStart.getValue() == null) {
+				alert.setHeaderText("查詢起日不得為空值！");
+				alert.showAndWait();
+				return;
+			} 
+		}*/
+		QRCodeListPDF qlPDF = new QRCodeListPDF();
+		if (qlPDF.setCondition(qsc)) {
+			qlPDF.translationOfCondition();
+			alert.setHeaderText("學員QR Code PDF 成功產出！");
+			alert.setContentText("檔案產出在: " + qlPDF.run().getAbsolutePath());
+			alert.showAndWait();
+			System.out.println(qlPDF.run().getAbsolutePath());			
+		}
+
+	}
+	
+	public void updateStudentDetail() {
+		/*
+		 * 暫時不採用另開視窗的方法，若要採新開視窗，而且在關閉視窗時會更新母視窗畫面的話，
+		 * 記得一定要使用subStage.showAndWait();
+		 * 這樣母視窗才會在關閉的時候接著執行，若採用subStage.show()的話，在開啟子視窗時，母視窗的程式已被並行執行。
+		 * BtnUpdateStu btnUpd
+		 */
+		
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("StudentDetail.fxml"));			
+		SplitPane root = null;
+		try {
+			root = (SplitPane)loader.load();
+		} catch (IOException e) {
+			logger.info(e.getMessage(), e);
+		}
+		subStage.setScene(new Scene(root, 850, 550));
+		subStage.setTitle("COLOR SPORTS CLUB MDM_V1.0");
+		subStage.setResizable(false); //不可改變視窗大小
+		//subStage.show();
+		subStage.showAndWait();
+        		
+		/*  
+		Integer hhTemp = null;
+		Integer mmTemp = null;
+	    String studentName = "";	
+		Alert alert = new Alert(Alert.AlertType.INFORMATION);
+		alert.setHeaderText("輸入錯誤");
+				
+		DBConnectionFactory dbf = new DBConnectionFactory();
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
+		
+		
+		try {
+			RollCallUploadDetail rcd = new RollCallUploadDetail();
+			String specialCode = "";
+			//取學員基本資料
+			String sql = 
+					"SELECT " +
+					"  Name," + 
+					"  Department," +
+					"  CourseKind," +
+					"  Level, " +
+					"  MemberBelong " +
+					"FROM " + 
+					"  Student " + 
+					"WHERE " + 
+					"  StudentNo = ?";
+			conn = dbf.getSQLiteCon("", "Club.dll");
+			pstmt = conn.prepareStatement(sql);
+			pstmt.clearParameters();
+			pstmt.setString(1, tfStudentNo.getText().trim());			
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				rcd.setStudentNo(tfStudentNo.getText().trim());
+				rcd.setName(rs.getString("Name"));
+				rcd.setDepartment(rs.getString("Department"));
+				rcd.setCourseKind(rs.getString("CourseKind"));
+				rcd.setLevel(rs.getString("Level"));
+				rcd.setMemberBelong(rs.getString("MemberBelong"));
+				//"01-非特色", "02-馬拉松", "03-基礎動作", "04-外師授課", "99-其它"
+				switch(cbSpecialInsert.getValue()) {
+					case "01-非特色":
+						specialCode = "01";
+						break;
+					case "02-馬拉松":
+						specialCode = "02";
+						break;
+					case "03-基礎動作":
+						specialCode = "03";
+						break;
+					case "04-外師授課":
+						specialCode = "04";
+						break;
+					case "99-其它":
+						specialCode = "99";
+						break;
+				}
+				if (specialCode.equalsIgnoreCase("")) {
+					alert.setContentText("特色課程下拉選單資料有問題，請與開發人員確認。");
+					alert.showAndWait();
+					return;						
+				}	
+			}
+
+			rs.close();
+			pstmt.close();
+
+			//寫入資料庫
+			sql = "INSERT INTO RollCallUploadDetail "
+					+ "(FileName, StudentNo, RollCallTime, Special, CreateTime, Name, Level, MemberBelong, Department, CourseKind) "
+					+ "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			conn = dbf.getSQLiteCon("", "Club.dll");
+			pstmt = conn.prepareStatement(sql);
+			pstmt.clearParameters();
+			SystemTime st = new SystemTime();
+			pstmt.setString(1, "UserKeyIn_" + st.getNowTime("yyyy-MM-dd HH:mm:ss"));
+			pstmt.setString(2, tfStudentNo.getText().trim());
+			pstmt.setString(3, dpChoiceRollCallDateInsert.getValue() + " " + tfRollCallHH.getText().trim() + ":" + tfRollCallMM.getText().trim() + ":00");
+			pstmt.setString(4, specialCode);
+			pstmt.setString(5, st.getNowTime("yyyyMMddHHmmssSSS"));
+			pstmt.setString(6, rcd.getName());
+			pstmt.setString(7, rcd.getLevel());
+			pstmt.setString(8, rcd.getMemberBelong());
+			pstmt.setString(9, rcd.getDepartment());
+			pstmt.setString(10, rcd.getCourseKind());
+			pstmt.executeUpdate();			
+
+			alert.setHeaderText("");
+			alert.setContentText("點名資料新增成功！");
+			alert.showAndWait();
+			
+			tfStudentNo.setText("");
+			tfRollCallHH.setText("");
+			tfRollCallMM.setText("");
+			cbSpecialInsert.setValue("01-非特色");
+			
+			//查詢點名資料
+			queryRollCallDetail(); 
+
+		} catch (Exception e) {
+			alert.setContentText("點名資料新增失敗(資料已存在)！");
+			alert.showAndWait();
+			logger.info(e.getMessage(), e);
+			return;	
+		} finally {
+			try {
+				if (rs != null) {
+					rs.close();
+				}
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+			try {
+				if (conn != null) {
+					conn.close();
+				}
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+		}		*/
+
+	}	
+
 
 } 
+
+	
