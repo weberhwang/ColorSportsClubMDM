@@ -456,6 +456,7 @@ public class RollCallMaintainController extends Application {
 		alert.setHeaderText("點名資料刪除確認");
 		alert.setContentText("確認刪除此筆點名資料？");
 		Optional<ButtonType> buttonType = alert.showAndWait();
+		
 		if (buttonType.get().getButtonData().equals(ButtonBar.ButtonData.OK_DONE)) {
 
 	    } else {

@@ -187,6 +187,9 @@ public class QRCodeListPDF {
 		// 學員編號
 		if (queryStudentCondition.getStudentNo() == null || queryStudentCondition.getStudentNo().trim().length() <=0) {			
 		} else {
+			if (!firstCondition) {
+				sql.append(" and ");
+			}
 			sql.append(" StudentNo = '" + queryStudentCondition.getStudentNo().trim() + "' ");
 			firstCondition = false;
 		}

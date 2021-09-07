@@ -5,6 +5,9 @@
  */
 package com.wj.clubmdm.vo;
 
+import com.wj.clubmdm.component.BtnDelStu;
+import com.wj.clubmdm.component.BtnUpdateStu;
+
 public class Student {
 	private String seqNo;
 	private String memberNo;
@@ -35,6 +38,10 @@ public class Student {
 	private String status;
 	private String createTime;
 	private String updateTime;
+	private BtnUpdateStu btnUpdate;//更新按鈕
+	private BtnDelStu btnDelete; //刪除按鈕
+
+	
 	public String getSeqNo() {
 		return seqNo;
 	}
@@ -155,6 +162,7 @@ public class Student {
 	public void setLevel(String level) {
 		this.level = level;
 	}
+	
 	public String getJoinDate() {
 		return joinDate;
 	}
@@ -208,6 +216,18 @@ public class Student {
 	}
 	public void setUpdateTime(String updateTime) {
 		this.updateTime = updateTime;
+	}
+	public BtnDelStu getBtnDelete() {
+		return btnDelete;
+	}
+	public void setBtnDelete(BtnDelStu btnDelete) {
+		this.btnDelete = btnDelete;
+	}
+	public BtnUpdateStu getBtnUpdate() {
+		return btnUpdate;
+	}
+	public void setBtnUpdate(BtnUpdateStu btnUpdate) {
+		this.btnUpdate = btnUpdate;
 	}
 	
 	
