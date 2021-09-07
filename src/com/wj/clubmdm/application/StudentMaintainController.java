@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,6 +41,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.CheckBox;
@@ -414,7 +417,7 @@ public class StudentMaintainController extends Application {
 	}
 	
 	public void saveImg (Image image, String fileName) {
-	    File outputFile = new File("Backup/Photo/" + fileName + ".png");
+	    File outputFile = new File("backup/Photo/" + fileName + ".png");
 	    BufferedImage bImage = SwingFXUtils.fromFXImage(image, null);
 	    try {
 	      ImageIO.write(bImage, "png", outputFile);
@@ -456,12 +459,12 @@ public class StudentMaintainController extends Application {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
         
-		// 檢核學員ID是否有輸入
+		// 檢核學員ID是否有輸入 		
 		if (tfMemberID.getText().trim().length() == 0) {
-			alert.setContentText("未輸入學員身分證字號");
+			alert.setContentText("未輸入學員身分證字號" + "\n" + "若是學員暫時不提供請先輸入" + "\n" + "Ｘ加上小朋友西元出生年月結尾X" + "\n" + "例如：1990/01/01 " + "\n" + "身分證字號 :X19900101X");
 			alert.showAndWait();
 			return;
-		} 
+		} 	
 		if ( (tfMemberID.getText().trim().length() > 10) || (tfMemberID.getText().trim().length() < 10) ) {
 			alert.setContentText("身分證字號長度有誤");
 			alert.showAndWait();
@@ -804,8 +807,8 @@ public class StudentMaintainController extends Application {
 					+ "Height, Level, Special, Birthday, SchoolLevel, "
 					+ "SchoolConfirmDate, SchoolLevelEstimate, MemberBelong, "
 					+ "Transfer, JoinDate, LeaveDate, Department, CourseKind, "
-					+ "Guardian_1, ContactTEL_1, Guardian_2, ContactTEL_2, Status, CreateTime, UpdateTime) "
-					+ "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+					+ "Guardian_1, ContactTEL_1, Guardian_2, ContactTEL_2, Status, CreateTime, UpdateTime, Remark) "
+					+ "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 			logger.info("新增語法 :" + InsertStudentsql + "\n");
 			pstmt = conn.prepareStatement(InsertStudentsql);
 			pstmt.clearParameters();
@@ -837,13 +840,14 @@ public class StudentMaintainController extends Application {
 			pstmt.setString(24, "N");
 			pstmt.setString(25, st.getNowTime("yyyyMMdd"));
 			pstmt.setString(26, "SYSTEM");
+			pstmt.setString(27, tfMark.getText().trim());
 			logger.info(givenStudentNo + "-" + tfMemberID.getText() + "-" + tfMemberName.getText() + "-"
 					+ cbMemberSex.getValue() + "-" + tfMemberAddress.getText() + "-" + tfMemberSchool.getText() + "-"
 					+ tfMemberHeight.getText() + "-" + cbLevel.getValue() + "-" + cbSpecial.getValue() + "-" + studentBirthday + "-"
 					+ cbMemberSchoolDesc.getValue() + "-" + st.getNowTime("yyyyMMdd") + "-" + null + "-" + memberBelong + "-" + cbTransfer.getValue() + "-"
 					+ joinDate + "-" + null + "-" + cbDepartment.getValue() + "-" + cbCourseKind.getValue() + "-" + tfGuardian1.getText() + "-"
 					+ tfContectTel1.getText() + "-" + tfGuardian2.getText() + "-" + tfContectTel2.getText() + "-" + "N" + "-" + st.getNowTime("yyyyMMdd") + "-"
-					+ "SYSTEM" + "\n");
+					+ "SYSTEM" + "-" +tfMark.getText() +"\n");
 			pstmt.executeUpdate();
 			if (imgvMemberImage.getImage() != null) {
 				imgFileName = givenStudentNo + "_" + tfMemberName.getText().trim();
@@ -905,7 +909,7 @@ public class StudentMaintainController extends Application {
 		SystemTime st = new SystemTime();
 		
 		tvStudentDetail.getItems().clear(); //清除點名TableView裡的資料
-		
+		/*
 		String sql = "SELECT " + 
 				     " StudentNo," + 
 				     " Id," + 
@@ -913,21 +917,21 @@ public class StudentMaintainController extends Application {
 					 " (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = b.Sex and d.MainCode = '001') Sex, " + 
 				     " Address," +
 				     " School," +
-				     " ifnull(b.Height, '-')," +
+				     " ifnull(b.Height, '-') Height," +
 					 " (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = b.Level and d.MainCode = '002') Level, " + 
 				     " Special," +
 				     " Birthday," +
-					 " (select ifnull(d.StudyDesc, '') from StudyAge d where d.StudyAgeCode = b.SchoolLevel) SchoolLevel, " + 
+					 " (select ifnull(b.SchoolLevel, '') from StudyAge d where d.StudyAgeCode = b.SchoolLevel) SchoolLevel, " + 
 				     " SchoolConfirmDate," +
 					 " ifnull(b.SchoolLevelEstimate, '-')," +
 					 " case " +
-					 " when substr(MemberBelong,1,3) = '100' then '冬夏令營' " +
-					 " when substr(MemberBelong,1,3) = '010' then '學校社團' " +
-					 " when substr(MemberBelong,1,3) = '001' then '俱樂部' " +
-					 " when substr(MemberBelong,1,3) = '110' then '冬夏令營 學校社團' " +
-					 " when substr(MemberBelong,1,3) = '101' then '冬夏令營 俱樂部' " +
-					 " when substr(MemberBelong,1,3) = '111' then '冬夏令營 學校社團 俱樂部' "+
-					 " when substr(MemberBelong,1,3) = '011' then '學校社團 俱樂部' " +
+					 " when substr(MemberBelong,1,3) = '100' then '100' " +
+					 " when substr(MemberBelong,1,3) = '010' then '010' " +
+					 " when substr(MemberBelong,1,3) = '001' then '001' " +
+					 " when substr(MemberBelong,1,3) = '110' then '110' " +
+					 " when substr(MemberBelong,1,3) = '101' then '101' " +
+					 " when substr(MemberBelong,1,3) = '111' then '111' "+
+					 " when substr(MemberBelong,1,3) = '011' then '011' " +
 					 " ELSE 'Error' " +
 					 " END as MemberBelong, " +
 				     " Transfer," +
@@ -944,23 +948,60 @@ public class StudentMaintainController extends Application {
 				     " UpdateTime " +
 				     "FROM " + 
 				     "  Student b " + 
+				     "WHERE 1 = 1 ";*/
+		
+		String sql = "SELECT " + 
+				     " StudentNo," + 
+				     " Id," + 
+				     " Name," +
+					 " (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = b.Sex and d.MainCode = '001') Sex, " + 
+				     " Address," +
+				     " School," +
+				     " Height," +
+					 " (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = b.Level and d.MainCode = '002') Level, " + 
+				     " Special," +
+				     " Birthday," +
+					 " (select ifnull(b.SchoolLevel, '') from StudyAge d where d.StudyAgeCode = b.SchoolLevel) SchoolLevel, " + 
+				     " SchoolConfirmDate," +
+					 " SchoolLevelEstimate," +
+					 " case " +
+					 " when substr(MemberBelong,1,3) = '100' then '100' " +
+					 " when substr(MemberBelong,1,3) = '010' then '010' " +
+					 " when substr(MemberBelong,1,3) = '001' then '001' " +
+					 " when substr(MemberBelong,1,3) = '110' then '110' " +
+					 " when substr(MemberBelong,1,3) = '101' then '101' " +
+					 " when substr(MemberBelong,1,3) = '111' then '111' "+
+					 " when substr(MemberBelong,1,3) = '011' then '011' " +
+					 " ELSE 'Error' " +
+					 " END as MemberBelong, " +
+				     " Transfer," +
+				     " JoinDate," +
+				     " LeaveDate," +
+					 " (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = b.Department and d.MainCode = '004') Department, " + 
+					 " (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = b.CourseKind and d.MainCode = '005') CourseKind, " + 
+				     " Guardian_1," +
+				     " ContactTEL_1," +
+				     " Guardian_2," +
+				     " ContactTEL_2," +
+					 " (select ifnull(d.desc, '') from CodeDetail d where d.DetailCode = b.Status and d.MainCode = '006') Status, " + 
+				     " CreateTime," +
+				     " UpdateTime, " +
+				     " Remark " +
+				     "FROM " + 
+				     "  Student b " + 
 				     "WHERE 1 = 1 ";
 		
-		/*
-		if (tfStudentNo_query.getText().trim().length() > 0) {
-			 sql += " and b.StudentNo = ?" ;
-		}*/
 		
 		if (tfStudentNo_query.getText().trim().length() > 0) {
 			 sql += " and b.StudentNo = " + " '"+ tfStudentNo_query.getText().trim()+"' ";
 		}
 		
 		if (tfMemberName_query.getText().trim().length() > 0) {
-			 sql += " and b.Name like " + " '%"+ tfMemberName_query.getText().trim()+"%' ";
+			 sql += " and b.Name like " + "'%"+ tfMemberName_query.getText().trim()+"%'";
 		}
 		
 		if (tfMemberSchool_query.getText().trim().length() > 0) {
-			 sql += " and b.School like " + " '%"+ tfMemberSchool_query.getText().trim()+"%' ";
+			 sql += " and b.School like " + "'%"+ tfMemberSchool_query.getText().trim()+"%'";
 		}
 		
 		if(cbMemberSex_query.getValue() != null) {
@@ -1176,9 +1217,50 @@ public class StudentMaintainController extends Application {
 				stu.setCourseKind(rs.getString("CourseKind"));
 				stu.setLevel(rs.getString("Level"));
 				stu.setJoinDate(rs.getString("JoinDate").substring(0, 4) + "-" + rs.getString("JoinDate").substring(4, 6) + "-" + rs.getString("JoinDate").substring(6));
-				
-				//建立更新學員資料按鈕
+				//tableView 沒顯示的欄位但要設定給值,後續更新資料會用到
+				stu.setAddress(rs.getString("Address"));
+				stu.setId(rs.getString("ID"));
+				stu.setBirthday(rs.getString("Birthday").substring(0, 4) + "-" + rs.getString("Birthday").substring(4, 6) + "-" + rs.getString("Birthday").substring(6));
+				stu.setHeight(rs.getString("Height"));
+				stu.setSchool(rs.getString("School"));
+				stu.setSchoolLevel(rs.getString("SchoolLevel"));
+				stu.setSchoolLevelEstimate(rs.getString("SchoolLevelEstimate"));
+				stu.setGuardian1(rs.getString("Guardian_1"));
+				stu.setContactTel1(rs.getString("ContactTEL_1"));
+				stu.setGuardian2(rs.getString("Guardian_2"));
+				stu.setContactTel2(rs.getString("ContactTEL_2"));
+				stu.setTransfer(rs.getString("Transfer"));
+				stu.setSpecial(rs.getString("Special"));
+				stu.setStatus(rs.getString("Status"));
+				stu.setLeaveDate(rs.getString("LeaveDate"));
+				stu.setMemberBelong(rs.getString("MemberBelong"));
+				stu.setMark(rs.getString("Remark"));
+				//建立更新學員資料按鈕,更新按鈕與該筆學員資料binding
 				btnUpd = new BtnUpdateStu();
+				btnUpd.setStudentNo(stu.getMemberNo());
+				btnUpd.setID(stu.getId());
+				btnUpd.setName(stu.getName());
+				btnUpd.setSchool(stu.getSchool());
+				btnUpd.setSchoolLevel(stu.getSchoolLevel());
+				btnUpd.setSchoolLevelEstimate(stu.getSchoolLevelEstimate());
+				btnUpd.setBirthday(stu.getBirthday());
+				btnUpd.setSex(stu.getSex());
+				btnUpd.setHEIGHT(stu.getHeight());
+				btnUpd.setAddress(stu.getAddress());
+				btnUpd.setGuardian_1(stu.getGuardian1());
+				btnUpd.setContactTEL_1(stu.getContactTel1());
+				btnUpd.setGuardian_2(stu.getGuardian2());
+				btnUpd.setContactTEL_2(stu.getContactTel2());
+				btnUpd.setTransfer(stu.getTransfer());
+				btnUpd.setSpecial(stu.getSpecial());
+				btnUpd.setStatus(stu.getStatus());
+				btnUpd.setDepartment(stu.getDepartment());
+				btnUpd.setCourseKind(stu.getCourseKind());
+				btnUpd.setLevel(stu.getLevel());
+				btnUpd.setJoinDate(stu.getJoinDate());
+				btnUpd.setLeaveDate(stu.getLeaveDate());
+				btnUpd.setMemberBelong(stu.getMemberBelong());
+				btnUpd.setRemark(stu.getMark());
 				btnUpd.autosize();
 				btnUpd.setStyle("-fx-background-color: Gray;-fx-text-fill: white;");
 				btnUpd.setText("修改");
@@ -1188,9 +1270,7 @@ public class StudentMaintainController extends Application {
 			        @Override
 					public void handle(ActionEvent event) {
 			        	BtnUpdateStu btnUpd = (BtnUpdateStu)event.getSource();
-			        	updateStudentDetail();
-			        	//alert.showAndWait();
-			        	//delStudentDetail(btnDel);//呼叫刪除的方法
+			        	updateStudentDetail(btnUpd);
 			        }
 			    });
 				//建立刪除學員資料按鈕
@@ -1198,6 +1278,8 @@ public class StudentMaintainController extends Application {
 				btnDel.autosize();
 				btnDel.setStyle("-fx-background-color: Gray;-fx-text-fill: white;");
 				btnDel.setText("刪除");
+				btnDel.setStudentNo(stu.getMemberNo());
+				btnDel.setName(stu.getName());
 				//btnDel.setStudentNo(rs.getString("StudentNo"));
 				//btnDel.setName(rs.getString("Name"));
 				/*
@@ -1226,8 +1308,8 @@ public class StudentMaintainController extends Application {
 			        @Override
 			        public void handle(ActionEvent event1) {
 			        	BtnDelStu btnDel = (BtnDelStu)event1.getSource();
-			        	alert.showAndWait();
-			        	//delStudentDetail(btnDel);//呼叫刪除的方法
+			        	//alert.showAndWait();
+			        	delStudentDetail(btnDel);//呼叫刪除的方法
 			        }
 			    });
 				
@@ -1258,31 +1340,188 @@ public class StudentMaintainController extends Application {
 	}
 	
 	public void exportQrPdf() {
-		String joinDateStart = "20210405";
-		String joinDateEnd = "20210406";
+		String joinDateStart = "";
+		String joinDateEnd = "";
+		Integer winterSummerCamp = 0;
+		Integer schoolClub = 0B000;//Binary 表示
+		Integer colorClub = 0B000;
+		Integer selectChk = 0B000;
+		String  memberBelong = "";
 		Alert alert = new Alert(Alert.AlertType.INFORMATION);
 		alert.setTitle("訊息");
+		
 		QueryStudentCondition qsc = new QueryStudentCondition();
-		//qsc.setStatus("N"); // Default 查詢欄位皆未選擇的情況下以狀態：正常 產出QR Code PDF
-		qsc.setStudentNo(tfStudentNo_query.getText().trim()); // 學員編號
-		qsc.setName(tfMemberName_query.getText().trim()); // 姓名
-		/*
+		qsc.setStatus("N"); // Default 查詢欄位皆未選擇的情況下以狀態：正常 產出QR Code PDF
+		if(tfStudentNo_query.getText().length() > 0){
+			qsc.setStudentNo(tfStudentNo_query.getText().trim()); // 學員編號
+		}
+		if(tfMemberName_query.getText().length() > 0){
+			qsc.setName(tfMemberName_query.getText().trim()); // 姓名
+		}		
 		if(cbMemberSex_query.getValue() == "男") {
 			qsc.setSex("M");
 		} else if (cbMemberSex_query.getValue() == "女") {
 			qsc.setSex("F");
-		}// 性別*/
+		}// 性別
+		if(tfMemberSchool_query.getText().length() > 0){
+			qsc.setSchool(tfMemberSchool_query.getText().trim()); // 就讀學校
+		}
 		
-		//qsc.setSchool("台中市光復國小"); // 就讀學校
-		//qsc.setSchoolLevel(906); // 學齡
-		//qsc.setStatus("N"); // 狀態
-		//qsc.setMemberBelong("1100000000"); // 成員所屬
-		//qsc.setDepartment("02"); // 上課分部
-		//qsc.setCourseKind("01"); // 課程類別
-		//qsc.setLevel("01"); // 程度
-		qsc.setJoinDateStr("20210331"); // 入隊日(起)
-		qsc.setJoinDateEnd("20210401"); // 入隊日(迄) 
-		/*
+		if(cbStatus_query.getValue() != null) {
+			switch(cbStatus_query.getValue()) {
+				case "正式" : 	
+					qsc.setStatus("N");
+					break;
+				case "停課" : 	
+					qsc.setStatus("S");
+					break;
+				case "退遂" : 	
+					qsc.setStatus("L");
+					break;
+			}
+		}
+		if(cbDepartment_query.getValue() != null) {
+			switch(cbDepartment_query.getValue()) {
+				case "陽光" : 	
+					qsc.setDepartment("02");
+					break;
+				case "仁愛" : 	
+					qsc.setDepartment("01");
+					break;
+				case "隨選" : 	
+					qsc.setDepartment("99");
+					break;
+			}
+		}// 上課分部
+		
+		if(cbCourseKind_query.getValue() != null) {
+			switch(cbCourseKind_query.getValue()) {
+				case "花式" : 	
+					qsc.setCourseKind("01");
+					break;
+				case "競速" : 	
+					qsc.setCourseKind("02");
+					break;
+				case "雙棲" : 	
+					qsc.setCourseKind("03");
+					break;
+			}
+		}// 課程類別
+		
+		if(cbMemberSchoolDesc_query.getValue() != null) {
+			switch(cbMemberSchoolDesc_query.getValue()) {
+				case "學齡":
+					qsc.setSchoolLevel(902);
+					break;
+				case "幼小":
+					qsc.setSchoolLevel(903);
+					break;
+				case "幼中":
+					qsc.setSchoolLevel(904);
+					break;
+				case "幼大":
+					qsc.setSchoolLevel(905);
+					break;
+				case "大一":
+					qsc.setSchoolLevel(918);
+					break;
+				case "大二":
+					qsc.setSchoolLevel(919);
+					break;
+				case "大三":
+					qsc.setSchoolLevel(920);
+					break;
+				case "大四":
+					qsc.setSchoolLevel(921);
+					break;
+				case "成人":
+					qsc.setSchoolLevel(922);
+					break;
+				case "其它":
+					qsc.setSchoolLevel(999);
+					break;
+				case "小一":
+					qsc.setSchoolLevel(906);
+					break;
+				case "小二":
+					qsc.setSchoolLevel(907);
+					break;
+				case "小三":
+					qsc.setSchoolLevel(908);
+					break;
+				case "小四":
+					qsc.setSchoolLevel(909);
+					break;
+				case "小五":
+					qsc.setSchoolLevel(910);
+					break;
+				case "小六":
+					qsc.setSchoolLevel(911);
+					break;
+				case "國一":
+					qsc.setSchoolLevel(912);
+					break;
+				case "國二":
+					qsc.setSchoolLevel(913);
+					break;
+				case "國三":
+					qsc.setSchoolLevel(914);
+					break;
+				case "高一":
+					qsc.setSchoolLevel(915);
+					break;
+				case "高二":
+					qsc.setSchoolLevel(916);
+					break;
+				case "高三":
+					qsc.setSchoolLevel(917);
+					break;
+			}
+		}// 學齡
+		
+		if(cbLevel_query.getValue() != null) {
+			switch(cbLevel_query.getValue()) {
+				case "初級" : 	
+					qsc.setLevel("01");
+					break;
+				case "中級" : 	
+					qsc.setLevel("02");
+					break;
+				case "高級" : 	
+					qsc.setLevel("03");
+					break;
+				case "C組" : 	
+					qsc.setLevel("04");
+					break;
+				case "B組" : 	
+					qsc.setLevel("05");
+					break;
+				case "A組" : 	
+					qsc.setLevel("06");
+					break;
+			}
+		}// 程度
+		
+		
+		
+		if (ckbWinterSumerCamp_query.isSelected() || ckbSchoolClub_query.isSelected() || ckbColorClub_query.isSelected()) {
+			if (ckbWinterSumerCamp_query.isSelected()) {
+					winterSummerCamp = 0B100;
+			}
+				   
+			if (ckbSchoolClub_query.isSelected()) {
+					schoolClub = 0B010;
+			}
+				   
+			if (ckbColorClub_query.isSelected()) {
+					colorClub = 0B001;
+			}
+			selectChk = (winterSummerCamp | schoolClub | colorClub);
+			memberBelong = String.format("%3s", Integer.toBinaryString(selectChk)).replace(' ', '0') + "0000000";//後面七位保留
+			System.out.printf(memberBelong + "\n");
+			qsc.setMemberBelong(memberBelong);
+		} // 成員所屬
+	
 		if (dpJoinDateStart.getValue() != null) {
 			if (dpJoinDateEnd.getValue() == null) {
 				alert.setHeaderText("查詢迄日不得為空值！");
@@ -1314,27 +1553,38 @@ public class StudentMaintainController extends Application {
 				alert.showAndWait();
 				return;
 			} 
-		}*/
+		}
 		QRCodeListPDF qlPDF = new QRCodeListPDF();
 		if (qlPDF.setCondition(qsc)) {
 			qlPDF.translationOfCondition();
-			alert.setHeaderText("學員QR Code PDF 成功產出！");
-			alert.setContentText("檔案產出在: " + qlPDF.run().getAbsolutePath());
-			alert.showAndWait();
-			System.out.println(qlPDF.run().getAbsolutePath());			
-		}
+			File exportResult = qlPDF.run();
+			if (exportResult != null) {
+				alert.setHeaderText("學員QR Code PDF 成功產出！");
+				alert.setContentText("檔案產出在: " + exportResult.getAbsolutePath() );
+				alert.showAndWait();	
+			} else {
+				alert.setHeaderText("輸入的條件並無學員符合！");
+				alert.setContentText("本次無PDF產出 ");
+				alert.showAndWait();
+			}		
+		} 
 
 	}
 	
-	public void updateStudentDetail() {
+	public void updateStudentDetail(BtnUpdateStu btnUpd) {
+
 		/*
 		 * 暫時不採用另開視窗的方法，若要採新開視窗，而且在關閉視窗時會更新母視窗畫面的話，
 		 * 記得一定要使用subStage.showAndWait();
 		 * 這樣母視窗才會在關閉的時候接著執行，若採用subStage.show()的話，在開啟子視窗時，母視窗的程式已被並行執行。
 		 * BtnUpdateStu btnUpd
 		 */
-		
+		//When button clicked, load window and pass data
+		System.out.print( "學員編號：" + btnUpd.getStudentNo() + " 的詳細資料被載入" + "\n");
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("StudentDetail.fxml"));			
+		StudentDetailUpdateController controller = new StudentDetailUpdateController();//Jimmy 也能從fxml新增但我不建議
+		controller.setBtnUpd(btnUpd);//pass 學生資料給update Controller
+		loader.setController(controller);//controller 轉移
 		SplitPane root = null;
 		try {
 			root = (SplitPane)loader.load();
@@ -1346,140 +1596,93 @@ public class StudentMaintainController extends Application {
 		subStage.setResizable(false); //不可改變視窗大小
 		//subStage.show();
 		subStage.showAndWait();
-        		
-		/*  
-		Integer hhTemp = null;
-		Integer mmTemp = null;
-	    String studentName = "";	
-		Alert alert = new Alert(Alert.AlertType.INFORMATION);
-		alert.setHeaderText("輸入錯誤");
-				
-		DBConnectionFactory dbf = new DBConnectionFactory();
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		
-		
-		
-		try {
-			RollCallUploadDetail rcd = new RollCallUploadDetail();
-			String specialCode = "";
-			//取學員基本資料
-			String sql = 
-					"SELECT " +
-					"  Name," + 
-					"  Department," +
-					"  CourseKind," +
-					"  Level, " +
-					"  MemberBelong " +
-					"FROM " + 
-					"  Student " + 
-					"WHERE " + 
-					"  StudentNo = ?";
-			conn = dbf.getSQLiteCon("", "Club.dll");
-			pstmt = conn.prepareStatement(sql);
-			pstmt.clearParameters();
-			pstmt.setString(1, tfStudentNo.getText().trim());			
-			rs = pstmt.executeQuery();
-			while (rs.next()) {
-				rcd.setStudentNo(tfStudentNo.getText().trim());
-				rcd.setName(rs.getString("Name"));
-				rcd.setDepartment(rs.getString("Department"));
-				rcd.setCourseKind(rs.getString("CourseKind"));
-				rcd.setLevel(rs.getString("Level"));
-				rcd.setMemberBelong(rs.getString("MemberBelong"));
-				//"01-非特色", "02-馬拉松", "03-基礎動作", "04-外師授課", "99-其它"
-				switch(cbSpecialInsert.getValue()) {
-					case "01-非特色":
-						specialCode = "01";
-						break;
-					case "02-馬拉松":
-						specialCode = "02";
-						break;
-					case "03-基礎動作":
-						specialCode = "03";
-						break;
-					case "04-外師授課":
-						specialCode = "04";
-						break;
-					case "99-其它":
-						specialCode = "99";
-						break;
-				}
-				if (specialCode.equalsIgnoreCase("")) {
-					alert.setContentText("特色課程下拉選單資料有問題，請與開發人員確認。");
-					alert.showAndWait();
-					return;						
-				}	
-			}
 
-			rs.close();
-			pstmt.close();
-
-			//寫入資料庫
-			sql = "INSERT INTO RollCallUploadDetail "
-					+ "(FileName, StudentNo, RollCallTime, Special, CreateTime, Name, Level, MemberBelong, Department, CourseKind) "
-					+ "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-			conn = dbf.getSQLiteCon("", "Club.dll");
-			pstmt = conn.prepareStatement(sql);
-			pstmt.clearParameters();
-			SystemTime st = new SystemTime();
-			pstmt.setString(1, "UserKeyIn_" + st.getNowTime("yyyy-MM-dd HH:mm:ss"));
-			pstmt.setString(2, tfStudentNo.getText().trim());
-			pstmt.setString(3, dpChoiceRollCallDateInsert.getValue() + " " + tfRollCallHH.getText().trim() + ":" + tfRollCallMM.getText().trim() + ":00");
-			pstmt.setString(4, specialCode);
-			pstmt.setString(5, st.getNowTime("yyyyMMddHHmmssSSS"));
-			pstmt.setString(6, rcd.getName());
-			pstmt.setString(7, rcd.getLevel());
-			pstmt.setString(8, rcd.getMemberBelong());
-			pstmt.setString(9, rcd.getDepartment());
-			pstmt.setString(10, rcd.getCourseKind());
-			pstmt.executeUpdate();			
-
-			alert.setHeaderText("");
-			alert.setContentText("點名資料新增成功！");
-			alert.showAndWait();
-			
-			tfStudentNo.setText("");
-			tfRollCallHH.setText("");
-			tfRollCallMM.setText("");
-			cbSpecialInsert.setValue("01-非特色");
-			
-			//查詢點名資料
-			queryRollCallDetail(); 
-
-		} catch (Exception e) {
-			alert.setContentText("點名資料新增失敗(資料已存在)！");
-			alert.showAndWait();
-			logger.info(e.getMessage(), e);
-			return;	
-		} finally {
-			try {
-				if (rs != null) {
-					rs.close();
-				}
-			} catch (Exception e) {
-				logger.info(e.getMessage(), e);
-			}
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				logger.info(e.getMessage(), e);
-			}
-			try {
-				if (conn != null) {
-					conn.close();
-				}
-			} catch (Exception e) {
-				logger.info(e.getMessage(), e);
-			}
-		}		*/
 
 	}	
 
-
+	public void delStudentDetail (BtnDelStu btnDel) {
+		Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+		alert.setHeaderText("學員資料刪除確認");
+		alert.setContentText("確認刪除此筆學員資料？");
+		Optional<ButtonType> buttonType = alert.showAndWait();
+		if (buttonType.get().getButtonData().equals(ButtonBar.ButtonData.OK_DONE)) {
+			String DeleteStudentsql = "Delete from Student where StudentNo = ? and Name = ? ";
+			logger.info("刪除語法 :" + DeleteStudentsql + "\n");
+			DBConnectionFactory dbf = new DBConnectionFactory();
+			Connection conn = null;
+			PreparedStatement pstmt = null;
+			try {
+				
+				conn = dbf.getSQLiteCon("", "Club.dll");
+				pstmt = conn.prepareStatement(DeleteStudentsql);
+				pstmt.clearParameters();
+				pstmt.setString(1, btnDel.getStudentNo());
+				pstmt.setString(2, btnDel.getName());
+				pstmt.executeUpdate();
+				System.out.print( "學員編號：" + btnDel.getStudentNo() +  "-" + btnDel.getName() +" 的資料將要刪除" + "\n");
+				logger.info("學員編號：" + btnDel.getStudentNo() + "-" + btnDel.getName() + " 的資料將被刪除" + "\n");
+				String imgFilePath = "backup/Photo/" + btnDel.getStudentNo() +  "_" + btnDel.getName()  + ".png";
+				String imgQrFilePath = "backup/QRCode/" + btnDel.getStudentNo() +  "_" + btnDel.getName()  + ".png";
+				System.out.print( "Imgage File Path：" + imgFilePath + " and QRCode Path : " + imgQrFilePath +"\n");
+				deleteImg(imgFilePath);
+				deleteQrImg(imgQrFilePath);
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			} 
+			
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}
+			try {
+				conn.close();
+			} catch (Exception e) {
+				logger.info(e.getMessage(), e);
+			}		
+	    } else {
+			//點「否」的話，就不會刪除資料。
+			return;
+		}
+		//重新查詢學員資料
+		queryStudentList();
+	}
+	
+	public void deleteImg (String file) {
+		File imgFile = new File(file);
+		if (imgFile.exists()) {
+			boolean success = imgFile.delete();
+			if (!success) {
+				System.out.printf("學員大頭照刪除失敗" + "\n");
+				logger.info("學員大頭照刪除失敗");
+			} else {
+				System.out.printf("此學員大頭照刪除成功" + "\n");
+				logger.info("此學員大頭照刪除成功");
+			}			
+		} else {
+			System.out.printf( "此學員沒有大頭照可刪除" + "\n");
+			logger.info("此學員沒有大頭照可刪除");
+		}
+		
+	}
+	
+	public void deleteQrImg (String file) {
+		File qrImgFile = new File(file);
+		if (qrImgFile.exists()) {
+			boolean success = qrImgFile.delete();
+			if (!success) {
+				System.out.printf("學員QR Code 刪除失敗" + "\n");
+				logger.info("學員QR Code 刪除失敗");
+			} else {
+				System.out.printf("此學員QR Code 刪除成功" + "\n");
+				logger.info("此學員QR Code 刪除成功");
+			}			
+		} else {
+			System.out.printf( "此學員沒有QR Code 可刪除" + "\n");
+			logger.info("此學員沒有QR Code 可刪除");
+		}
+		
+	}
 } 
 
 	

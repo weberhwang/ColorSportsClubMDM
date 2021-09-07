@@ -310,8 +310,8 @@
                   <HBox alignment="BOTTOM_CENTER" layoutX="435.0" layoutY="79.0" prefHeight="27.0" prefWidth="359.0" AnchorPane.leftAnchor="435.0" AnchorPane.topAnchor="79.0">
                      <children>
                         <Button fx:id="btnQuery" defaultButton="true" mnemonicParsing="false" onAction="#queryStudentList" prefHeight="27.0" prefWidth="60.0" style="-fx-background-color: BLACK;" text="查詢" textFill="WHITE" />
-                        <Button fx:id="btnExport" defaultButton="true" mnemonicParsing="false" prefHeight="27.0" prefWidth="100.0" style="-fx-background-color: GRAY;" text="產出學員名單" textFill="WHITE" />
                         <Button fx:id="btnExpQrPdf" defaultButton="true" mnemonicParsing="false" onAction="#exportQrPdf" prefHeight="27.0" prefWidth="100.0" style="-fx-background-color: Brown;" text="產出QR Code " textFill="WHITE" />
+                        <Button fx:id="btnExport" defaultButton="true" mnemonicParsing="false" prefHeight="27.0" prefWidth="100.0" style="-fx-background-color: GRAY;" text="產出學員名單" textFill="WHITE" visible="false" />
                      </children>
                   </HBox>
                </children>

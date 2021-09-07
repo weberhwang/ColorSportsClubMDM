@@ -40,7 +40,7 @@
                   <Image url="@../../../../../backup/QRCode/A000001.png" />
                </image>
             </ImageView>
-            <Button fx:id="btnImgUpdate" layoutX="85.0" layoutY="221.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="93.0" style="-fx-background-color: #80ced6;" text="更換照片" textFill="WHITE">
+            <Button fx:id="btnImgUpdate" layoutX="85.0" layoutY="221.0" mnemonicParsing="false" onAction="#updateImg" prefHeight="32.0" prefWidth="93.0" style="-fx-background-color: #80ced6;" text="更換照片" textFill="WHITE">
                <font>
                   <Font name="Arial Narrow" size="13.0" />
                </font></Button>
@@ -55,38 +55,37 @@
                   <Font size="14.0" />
                </font>
             </Label>
-            <TextField fx:id="tfName" layoutX="117.0" layoutY="77.0" prefHeight="23.0" prefWidth="110.0" promptText="蔡黑黑" />
+            <TextField fx:id="tfName" layoutX="117.0" layoutY="77.0" prefHeight="23.0" prefWidth="110.0" />
             <Label layoutX="50.0" layoutY="155.0" text="就讀學校">
                <font>
                   <Font size="14.0" />
                </font>
             </Label>
-            <TextField fx:id="tfSchool" layoutX="116.0" layoutY="153.0" promptText="社會大學" />
+            <TextField fx:id="tfSchool" layoutX="116.0" layoutY="153.0" />
             <Label layoutX="268.0" layoutY="116.0" text="生日">
                <font>
                   <Font size="14.0" />
                </font>
             </Label>
-            <TextField fx:id="tfBirthday" disable="true" layoutX="306.0" layoutY="114.0" prefHeight="23.0" prefWidth="104.0" promptText="1986/01/05" />
-            <Label layoutX="313.0" layoutY="154.0" text="年級">
+            <TextField fx:id="tfBirthday" disable="true" layoutX="306.0" layoutY="114.0" prefHeight="23.0" prefWidth="104.0" />
+            <Label layoutX="295.0" layoutY="155.0" text="年級">
                <font>
                   <Font size="14.0" />
                </font>
             </Label>
-            <TextField fx:id="tfSchoolDesc" layoutX="353.0" layoutY="151.0" prefHeight="23.0" prefWidth="56.0" promptText="大一" />
             <Label layoutX="440.0" layoutY="76.0" text="性別">
                <font>
                   <Font size="14.0" />
                </font>
             </Label>
-            <TextField fx:id="tfSex" disable="true" layoutX="481.0" layoutY="76.0" prefHeight="23.0" prefWidth="54.0" promptText="男" />
+            <TextField fx:id="tfSex" disable="true" layoutX="481.0" layoutY="76.0" prefHeight="23.0" prefWidth="54.0" />
             <Label layoutX="439.0" layoutY="115.0" text="身高">
                <font>
                   <Font size="14.0" />
                </font>
             </Label>
-            <TextField fx:id="tfHeight" layoutX="481.0" layoutY="113.0" prefHeight="23.0" prefWidth="54.0" promptText="185" />
-            <Label layoutX="427.0" layoutY="152.0" text="特教生">
+            <TextField fx:id="tfHeight" layoutX="481.0" layoutY="113.0" prefHeight="23.0" prefWidth="54.0" />
+            <Label layoutX="430.0" layoutY="190.0" text="特教生">
                <font>
                   <Font size="14.0" />
                </font>
@@ -96,11 +95,11 @@
                   <Font size="14.0" />
                </font>
             </Label>
-            <TextField fx:id="tfStudentNo" disable="true" layoutX="305.0" layoutY="76.0" prefHeight="23.0" prefWidth="104.0" promptText="A00001">
+            <TextField fx:id="tfStudentNo" disable="true" layoutX="305.0" layoutY="76.0" prefHeight="23.0" prefWidth="104.0">
                <font>
                   <Font name="System Bold" size="13.0" />
                </font></TextField>
-            <Label layoutX="426.0" layoutY="186.0" text="轉隊生">
+            <Label layoutX="432.0" layoutY="326.0" text="轉隊生">
                <font>
                   <Font size="14.0" />
                </font>
@@ -110,12 +109,12 @@
                   <Font size="14.0" />
                </font>
             </Label>
-            <Label layoutX="327.0" layoutY="327.0" text="程度">
+            <Label layoutX="315.0" layoutY="326.0" text="程度">
                <font>
                   <Font size="14.0" />
                </font>
             </Label>
-            <Label layoutX="204.0" layoutY="327.0" text="類別">
+            <Label layoutX="196.0" layoutY="327.0" text="類別">
                <font>
                   <Font size="14.0" />
                </font>
@@ -125,7 +124,7 @@
                   <Font size="14.0" />
                </font>
             </Label>
-            <TextField fx:id="tfAddress" layoutX="116.0" layoutY="187.0" prefHeight="23.0" prefWidth="293.0" promptText="台北市東區市民大道一段" />
+            <TextField fx:id="tfAddress" layoutX="116.0" layoutY="187.0" prefHeight="23.0" prefWidth="293.0" />
             <Label layoutX="47.0" layoutY="185.0" text="通訊地址">
                <font>
                   <Font size="14.0" />
@@ -136,8 +135,8 @@
                   <Font size="14.0" />
                </font>
             </Label>
-            <TextField fx:id="tfGuardian2" layoutX="118.0" layoutY="259.0" prefHeight="23.0" prefWidth="119.0" promptText="OOXX" />
-            <TextField fx:id="tfContectTel2" layoutX="368.0" layoutY="259.0" prefHeight="23.0" prefWidth="170.0" promptText="0988-123-456" />
+            <TextField fx:id="tfGuardian2" layoutX="118.0" layoutY="259.0" prefHeight="23.0" prefWidth="119.0" />
+            <TextField fx:id="tfContectTel2" layoutX="368.0" layoutY="259.0" prefHeight="23.0" prefWidth="170.0" />
             <Label layoutX="44.0" layoutY="261.0" text="監護人(二)">
                <font>
                   <Font size="14.0" />
@@ -148,8 +147,8 @@
                   <Font size="14.0" />
                </font>
             </Label>
-            <TextField fx:id="tfContectTel1" layoutX="368.0" layoutY="223.0" prefHeight="23.0" prefWidth="170.0" promptText="0966-123-123" />
-            <TextField fx:id="tfGuardian1" layoutX="118.0" layoutY="223.0" prefHeight="23.0" prefWidth="119.0" promptText="蔡XX" />
+            <TextField fx:id="tfContectTel1" layoutX="368.0" layoutY="223.0" prefHeight="23.0" prefWidth="170.0" />
+            <TextField fx:id="tfGuardian1" layoutX="118.0" layoutY="223.0" prefHeight="23.0" prefWidth="119.0" />
             <Label layoutX="278.0" layoutY="225.0" text="連絡電話(一)">
                <font>
                   <Font size="14.0" />
@@ -165,7 +164,7 @@
                   <Font size="14.0" />
                </font>
             </Label>
-            <TextField fx:id="tfMark" layoutX="118.0" layoutY="400.0" prefHeight="23.0" prefWidth="421.0" promptText="父母問題特別多,非常難搞!" />
+            <TextField fx:id="tfMark" layoutX="118.0" layoutY="400.0" prefHeight="23.0" prefWidth="421.0" />
             <Label layoutX="196.0" layoutY="29.0" text="COLOR 學員基本資料明細">
                <font>
                   <Font name="System Bold" size="20.0" />
@@ -176,7 +175,7 @@
                   <Font size="14.0" />
                </font>
             </Label>
-            <TextField fx:id="tfId" layoutX="117.0" layoutY="114.0" prefHeight="23.0" prefWidth="110.0" promptText="H123456789" />
+            <TextField fx:id="tfId" layoutX="117.0" layoutY="114.0" prefHeight="23.0" prefWidth="110.0" />
             <CheckBox fx:id="ckbColorClub" layoutX="291.0" layoutY="297.0" mnemonicParsing="false" text="俱樂部" />
             <CheckBox fx:id="ckbSchoolClub" layoutX="204.0" layoutY="297.0" mnemonicParsing="false" text="學校社團" />
             <Label layoutX="47.0" layoutY="295.0" text="成員所屬">
@@ -190,8 +189,8 @@
                   <Font size="14.0" />
                </font>
             </Label>
-            <Button alignment="CENTER" layoutX="251.0" layoutY="436.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="93.0" style="-fx-background-color: Green;" text="更新確認" textFill="WHITE" />
-            <TextField fx:id="tfResultInfo" layoutX="44.0" layoutY="495.0" prefHeight="27.0" prefWidth="501.0" promptText="2020-07-30 22:35:21  資料修改完成!">
+            <Button fx:id="btnConfirmUpdate" alignment="CENTER" layoutX="251.0" layoutY="436.0" mnemonicParsing="false" onAction="#confirmUpdate" prefHeight="32.0" prefWidth="93.0" style="-fx-background-color: Green;" text="更新確認" textFill="WHITE" />
+            <TextField fx:id="tfResultInfo" layoutX="44.0" layoutY="495.0" prefHeight="27.0" prefWidth="501.0">
                <font>
                   <Font size="15.0" />
                </font>
@@ -202,13 +201,20 @@
                </font>
             </Label>
             <DatePicker fx:id="dpLeaveDate" layoutX="417.0" layoutY="360.0" prefHeight="27.0" prefWidth="119.0" />
-            <ChoiceBox fx:id="cbLevel" layoutX="366.0" layoutY="323.0" prefHeight="27.0" prefWidth="76.0" />
-            <ChoiceBox fx:id="cbCourseKind" layoutX="240.0" layoutY="324.0" prefHeight="27.0" prefWidth="76.0" />
-            <ChoiceBox fx:id="cbDepartment" layoutX="116.0" layoutY="323.0" prefHeight="27.0" prefWidth="80.0" />
-            <ChoiceBox fx:id="cbSpecial" layoutX="482.0" layoutY="151.0" prefHeight="27.0" prefWidth="54.0" />
-            <ChoiceBox fx:id="cbTranfer" layoutX="482.0" layoutY="187.0" prefHeight="27.0" prefWidth="54.0" />
+            <ChoiceBox fx:id="cbLevel" layoutX="352.0" layoutY="321.0" prefHeight="27.0" prefWidth="70.0" />
+            <ChoiceBox fx:id="cbCourseKind" layoutX="234.0" layoutY="323.0" prefHeight="27.0" prefWidth="70.0" />
+            <ChoiceBox fx:id="cbDepartment" layoutX="116.0" layoutY="323.0" prefHeight="27.0" prefWidth="70.0" />
+            <ChoiceBox fx:id="cbSpecial" layoutX="482.0" layoutY="187.0" prefHeight="27.0" prefWidth="54.0" />
+            <ChoiceBox fx:id="cbTransfer" layoutX="483.0" layoutY="321.0" prefHeight="27.0" prefWidth="54.0" />
             <DatePicker fx:id="dpJoinDate" layoutX="116.0" layoutY="360.0" prefHeight="27.0" prefWidth="119.0" />
             <ChoiceBox fx:id="cbStatus" layoutX="281.0" layoutY="359.0" prefHeight="27.0" prefWidth="76.0" />
+            <ChoiceBox fx:id="cbSchoolDesc" layoutX="334.0" layoutY="149.0" prefHeight="27.0" prefWidth="76.0" />
+            <TextField fx:id="tfSchoolLevelEstimate" disable="true" editable="false" layoutX="481.0" layoutY="149.0" prefHeight="27.0" prefWidth="54.0" />
+            <Label layoutX="414.0" layoutY="155.0" text="學齡預估">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Label>
          </children>
       </AnchorPane>
    </items>
